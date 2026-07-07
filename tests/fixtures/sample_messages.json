@@ -1,0 +1,232 @@
+[
+    {
+        "message": "Apakah di hotel ini ada fasilitas kolam renang?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Berapa nomor telepon untuk menghubungi resepsionis?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Jam berapa batas waktu check-in dan check-out?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Apakah wifi di kamar hotel ini gratis?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Di mana lokasi ruang sarapan pagi?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Apakah hotel ini menyediakan tempat parkir gratis?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Apakah hotel dekat dengan stasiun kereta terdekat?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Apakah ada hair dryer di dalam kamar mandi?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Apakah diperbolehkan membawa hewan peliharaan ke dalam kamar?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Apakah hotel menyediakan layanan laundry baju?",
+        "expected_intent": "faq",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Apakah ada kamar kosong tipe Deluxe untuk malam ini?",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Berapa harga sewa kamar Family Room per malam?",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Saya ingin tahu harga kamar Suite untuk tanggal 15 Agustus.",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Apakah tarif kamar sudah termasuk sarapan pagi?",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Ada tipe kamar apa saja yang tersedia untuk akhir pekan depan?",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Berapa biaya tambahan jika saya memesan extra bed?",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Apakah ada promo khusus untuk pemesanan kamar bulan ini?",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Berapa kapasitas maksimal orang untuk kamar tipe Standard?",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Tolong pesankan saya satu kamar Deluxe untuk tanggal 12 Juli atas nama Andi.",
+        "expected_intent": "booking_request",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Saya mau booking kamar Suite Room untuk 2 malam mulai hari Jumat besok.",
+        "expected_intent": "booking_request",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Tolong buatkan reservasi kamar Standard atas nama PT Mulia Abadi.",
+        "expected_intent": "booking_request",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Saya ingin memesan Family Room untuk tanggal 20 sampai 22 September.",
+        "expected_intent": "booking_request",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Bisa booking kamar Deluxe non-smoking untuk malam ini?",
+        "expected_intent": "booking_request",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Tolong amankan satu kamar termurah untuk besok pagi.",
+        "expected_intent": "booking_request",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Air panas di kamar mandi kamar saya tidak berfungsi sejak tadi pagi.",
+        "expected_intent": "complaint",
+        "difficulty": "easy"
+    },
+    {
+        "message": "AC di kamar 405 sangat panas dan mengeluarkan suara berisik.",
+        "expected_intent": "complaint",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Lantai kamar saya masih sangat kotor dan banyak debu ketika check-in.",
+        "expected_intent": "complaint",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Kenapa pesanan handuk tambahan saya belum dikirim juga?",
+        "expected_intent": "complaint",
+        "difficulty": "easy"
+    },
+    {
+        "message": "Pelayanan resepsionis saat check-in sangat tidak ramah dan lambat.",
+        "expected_intent": "complaint",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Makanan sarapan hari ini rasanya hambar dan sudah dingin.",
+        "expected_intent": "complaint",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Saya ingin membatalkan pemesanan kamar dengan kode booking HB-9821.",
+        "expected_intent": "cancellation",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Bagaimana caranya melakukan pembatalan reservasi hotel untuk besok?",
+        "expected_intent": "cancellation",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Tolong batalkan pesanan kamar saya atas nama Budi karena ada acara mendesak.",
+        "expected_intent": "cancellation",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Saya harus melakukan cancel booking kamar hotel yang dijadwalkan tanggal 5 Oktober.",
+        "expected_intent": "cancellation",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Apakah uang muka yang sudah saya bayar bisa dikembalikan jika batal menginap?",
+        "expected_intent": "refund",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Saya meminta pengembalian dana untuk reservasi kamar yang telah saya batalkan.",
+        "expected_intent": "refund",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Proses refund uang deposit kamar saya biasanya memakan waktu berapa lama?",
+        "expected_intent": "refund",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Bagaimana prosedur pengembalian uang pembayaran hotel yang batal?",
+        "expected_intent": "refund",
+        "difficulty": "medium"
+    },
+    {
+        "message": "Saya mau merubah tanggal booking dari tanggal 10 menjadi tanggal 12.",
+        "expected_intent": "unknown",
+        "difficulty": "hard"
+    },
+    {
+        "message": "Halo, selamat sore, saya ingin bertanya sesuatu.",
+        "expected_intent": "unknown",
+        "difficulty": "hard"
+    },
+    {
+        "message": "Berapa denda yang harus dibayar kalau saya membatalkan kamar?",
+        "expected_intent": "faq",
+        "difficulty": "hard"
+    },
+    {
+        "message": "Kamar saya bau rokok padahal saya pesan kamar non-smoking, tolong diganti.",
+        "expected_intent": "complaint",
+        "difficulty": "hard"
+    },
+    {
+        "message": "Saya ingin komplain mengenai refund deposit saya yang belum masuk.",
+        "expected_intent": "complaint",
+        "difficulty": "hard"
+    },
+    {
+        "message": "Apakah harga kamar deluxe bisa lebih murah kalau saya pesan sekarang?",
+        "expected_intent": "booking_inquiry",
+        "difficulty": "hard"
+    },
+    {
+        "message": "Tolong kirimkan invoice pembayaran atas reservasi saya kemarin.",
+        "expected_intent": "unknown",
+        "difficulty": "hard"
+    },
+    {
+        "message": "Bagaimana cara menuju ke stasiun terdekat dari hotel?",
+        "expected_intent": "faq",
+        "difficulty": "hard"
+    }
+]

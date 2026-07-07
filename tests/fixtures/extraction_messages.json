@@ -1,0 +1,56 @@
+[
+    {
+        "message": "Saya mau booking kamar Deluxe untuk tanggal 12 Juli sampai 15 Juli atas nama Budi.",
+        "expected": {
+            "name": "Budi",
+            "check_in_date": "12 Juli",
+            "check_out_date": "15 Juli",
+            "room_type": "deluxe"
+        }
+    },
+    {
+        "message": "Tolong pesankan kamar Suite atas nama Joko Widodo mulai besok.",
+        "expected": {
+            "name": "Joko Widodo",
+            "check_in_date": "besok",
+            "check_out_date": null,
+            "room_type": "suite"
+        }
+    },
+    {
+        "message": "Ada tipe kamar apa saja yang tersedia untuk tanggal 20 September?",
+        "expected": {
+            "name": null,
+            "check_in_date": "20 September",
+            "check_out_date": null,
+            "room_type": null
+        }
+    },
+    {
+        "message": "Saya mau booking kamar Standard atas nama Ani Lestari untuk tanggal 5 sampai 7 Agustus.",
+        "expected": {
+            "name": "Ani Lestari",
+            "check_in_date": "5 Agustus",
+            "check_out_date": "7 Agustus",
+            "room_type": "standard"
+        }
+    },
+    {
+        "message": "Bisa pesankan 1 Family Room mulai tanggal 25 Desember?",
+        "expected": {
+            "name": null,
+            "check_in_date": "25 Desember",
+            "check_out_date": null,
+            "room_type": "family room"
+        }
+    },
+    {
+        "message": "Halo, saya mau reservasi kamar Deluxe untuk akhir pekan ini atas nama Hendra Wijaya.",
+        "expected": {
+            "name": "Hendra Wijaya",
+            "check_in_date": "akhir pekan ini",
+            "check_out_date": null,
+            "room_type": "deluxe"
+        }
+    }
+]

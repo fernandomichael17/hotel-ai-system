@@ -1,0 +1,72 @@
+Nama hotel: Hotel Demo Metland
+Lokasi: Jakarta Pusat, dekat Monas
+Kamar: Standard (Rp 500.000/malam), Deluxe (Rp 850.000/malam), Suite (Rp 1.500.000/malam)
+Check-in: 14.00 WIB
+Check-out: 12.00 WIB
+Fasilitas: kolam renang, gym, restoran, free wifi, parkir gratis
+Sarapan: termasuk untuk Deluxe dan Suite
+Kebijakan: no smoking, no pet
+Cancellation: gratis H-3, denda 50% H-2, denda 100% H-1 dan no-show
+Refund: diproses 7-14 hari kerja
+Ballroom: kapasitas 500 orang, tersedia untuk wedding dan meeting
+Kontak: hotel@demo-metland.com (021) 1234-5678
+
+Q: Di mana lokasi Hotel Demo Metland?
+A: Hotel Demo Metland berlokasi di Jakarta Pusat, dekat dengan Monas.
+
+Q: Jam berapa waktu check-in dan check-out?
+A: Waktu check-in adalah mulai pukul 14.00 WIB, sedangkan check-out maksimal pukul 12.00 WIB.
+
+Q: Apakah ada fasilitas kolam renang?
+A: Ya, hotel kami dilengkapi dengan fasilitas kolam renang.
+
+Q: Apakah WiFi tersedia secara gratis?
+A: Ya, free wifi tersedia untuk semua tamu hotel.
+
+Q: Apakah sarapan sudah termasuk dalam harga kamar?
+A: Sarapan sudah termasuk untuk kamar tipe Deluxe dan Suite. Untuk tipe Standard, sarapan belum termasuk.
+
+Q: Tipe kamar apa saja yang tersedia?
+A: Kami memiliki kamar tipe Standard (Rp 500.000/malam), Deluxe (Rp 850.000/malam), dan Suite (Rp 1.500.000/malam).
+
+Q: Bolehkah saya membawa hewan peliharaan?
+A: Mohon maaf, kami memiliki kebijakan no pet, sehingga hewan peliharaan tidak diperbolehkan.
+
+Q: Apakah diperbolehkan merokok di dalam kamar?
+A: Kami menerapkan kebijakan no smoking di semua kamar.
+
+Q: Bagaimana kebijakan pembatalan kamar (cancellation)?
+A: Pembatalan gratis dapat dilakukan maksimal H-3. Pembatalan pada H-2 dikenakan denda 50%, sedangkan pada H-1 dan no-show dikenakan denda 100%.
+
+Q: Berapa lama proses refund?
+A: Proses pengembalian dana (refund) akan memakan waktu 7-14 hari kerja.
+
+Q: Apakah tersedia ballroom untuk acara pernikahan?
+A: Ya, kami memiliki ballroom dengan kapasitas 500 orang yang tersedia untuk wedding dan meeting.
+
+Q: Berapa kapasitas ballroom yang tersedia?
+A: Ballroom kami dapat menampung hingga 500 orang.
+
+Q: Bagaimana cara menghubungi pihak hotel?
+A: Anda dapat menghubungi kami melalui email di hotel@demo-metland.com atau telepon di (021) 1234-5678.
+
+Q: Apakah tersedia tempat parkir?
+A: Ya, kami menyediakan fasilitas parkir gratis untuk tamu hotel.
+
+Q: Apa saja fasilitas hotel selain kamar?
+A: Fasilitas kami meliputi kolam renang, gym, restoran, free wifi, dan parkir gratis.
+
+Q: Berapa harga kamar Deluxe per malam?
+A: Harga kamar Deluxe adalah Rp 850.000/malam.
+
+Q: Berapa harga kamar Suite per malam?
+A: Harga kamar Suite adalah Rp 1.500.000/malam.
+
+Q: Apakah saya bisa check-out lebih lambat dari jam 12.00?
+A: Waktu check-out standar adalah pukul 12.00 WIB. Untuk permintaan late check-out, harap menghubungi resepsionis.
+
+Q: Jika saya memesan kamar Standard, apakah bisa mendapat sarapan?
+A: Kamar Standard belum termasuk sarapan. Anda bisa memesan sarapan terpisah di restoran kami.
+
+Q: Apakah hotel ini ramah anak?
+A: Ya, dengan fasilitas seperti kolam renang, hotel kami cocok untuk keluarga dan ramah anak.

@@ -1,0 +1,26 @@
+[
+    {
+        "message": "Saya ingin membatalkan reservasi saya, dan apakah uang saya bisa dikembalikan?",
+        "expected_intents": ["cancellation", "refund"]
+    },
+    {
+        "message": "Kamar saya kotor sekali dan AC nya mati, saya mau komplain.",
+        "expected_intents": ["complaint"]
+    },
+    {
+        "message": "Berapa harga kamar deluxe dan saya mau langsung booking untuk besok atas nama Andi.",
+        "expected_intents": ["booking_inquiry", "booking_request"]
+    },
+    {
+        "message": "Bagaimana cara melakukan refund untuk kamar yang dibatalkan?",
+        "expected_intents": ["cancellation", "refund"]
+    },
+    {
+        "message": "Apakah ada kolam renang di hotel ini? Dan sekalian berapa biaya sewa kamar standard per malam?",
+        "expected_intents": ["faq", "booking_inquiry"]
+    },
+    {
+        "message": "AC di kamar saya rusak, tolong kembalikan saja uang saya karena saya mau check-out sekarang.",
+        "expected_intents": ["complaint", "refund"]
+    }
+]

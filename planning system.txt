@@ -1,0 +1,623 @@
+# Hotel AI Concierge & Service Assistant
+**Periode:** 29 Juni 2026 – Awal Desember 2026
+
+## Tujuan Proyek
+
+Membangun AI Concierge yang terintegrasi dengan sistem hotel yang sudah ada untuk membantu mengurangi beban Front Office melalui:
+
+- Informasi hotel (FAQ)
+- Informasi kamar dan harga
+- Cek ketersediaan kamar
+- Booking assistance
+- Complaint routing
+- Cancellation & refund request
+- Integrasi WhatsApp
+- Integrasi Website Chat
+- Tool Calling ke sistem hotel existing
+
+---
+
+# Scope V1
+
+## Informasi Hotel
+
+Contoh:
+
+- Jam check-in/check-out
+- Fasilitas hotel
+- Lokasi hotel
+- Ballroom
+- Meeting room
+- Promo
+- Kebijakan hotel
+
+---
+
+## Booking Assistance
+
+Contoh:
+
+- Cek kamar tersedia
+- Cek harga kamar
+- Cek status booking
+- Membantu proses booking
+
+Booking tetap diproses oleh Booking Engine yang sudah ada.
+
+---
+
+## Complaint Management
+
+Contoh:
+
+Input customer:
+
+> AC kamar tidak dingin
+
+AI:
+
+- Mengklasifikasikan keluhan
+- Membuat tiket
+- Mengirim ke departemen terkait
+
+Departemen:
+
+- Engineering
+- Housekeeping
+- Restaurant
+- Front Office
+
+---
+
+## Cancellation & Refund
+
+AI membantu:
+
+- Mengumpulkan data customer
+- Mengumpulkan alasan refund
+- Membaca policy hotel (RAG)
+- Membuat tiket refund
+
+Keputusan akhir tetap dilakukan oleh Finance.
+
+---
+
+## Sales Inquiry
+
+Contoh:
+
+- Harga ballroom
+- Paket wedding
+- Paket meeting
+
+AI memberikan informasi awal dan mengarahkan ke Sales apabila diperlukan.
+
+---
+
+# Arsitektur Tingkat Tinggi
+
+Customer
+
+↓
+
+WhatsApp / Website Chat
+
+↓
+
+AI Backend
+
+↓
+
+LLM + Tool Calling + RAG
+
+↓
+
+Existing Hotel Systems
+
+- Booking Engine
+- Complaint System
+- Finance System
+- CRM (Jika tersedia)
+
+---
+
+# Technology Stack
+
+## AI Layer
+
+### LLM
+
+- Qwen3 8B
+- Running menggunakan vLLM
+
+Fungsi:
+
+- Intent Classification
+- FAQ Answering
+- Tool Calling
+- Routing
+
+---
+
+### Embedding Model
+
+- BGE-M3
+
+Fungsi:
+
+- RAG Retrieval
+- FAQ Search
+- Policy Search
+
+---
+
+## Backend
+
+### FastAPI
+
+Fungsi:
+
+- API Gateway
+- Chat Processing
+- Tool Orchestration
+- Session Management
+
+---
+
+## Database
+
+### PostgreSQL
+
+Menyimpan:
+
+- User Session
+- Chat Logs
+- Complaint Records
+- Refund Requests
+- Audit Logs
+
+---
+
+### PGVector
+
+Menyimpan:
+
+- FAQ Embeddings
+- Hotel Policy Embeddings
+- Refund Policy Embeddings
+- Ballroom Information Embeddings
+
+---
+
+## Frontend
+
+### Website Chat
+
+- Next.js
+
+---
+
+## WhatsApp
+
+- Meta Cloud API
+
+---
+
+## Monitoring
+
+### Grafana
+
+Monitoring:
+
+- API Usage
+- Latency
+- Error Rate
+
+### Loki
+
+Monitoring:
+
+- Application Logs
+- Chat Logs
+- Error Logs
+
+---
+
+## Containerization
+
+### Docker Compose
+
+Services:
+
+- FastAPI
+- PostgreSQL
+- PGVector
+- vLLM
+- Grafana
+- Loki
+
+---
+
+# Timeline Proyek
+
+## Phase 0 - Requirement & Discovery
+
+### 29 Juni – 10 Juli
+
+### Aktivitas
+
+- Kickoff Meeting
+- Memahami proses bisnis hotel
+- Memahami SOP Front Office
+- Memahami SOP Refund
+- Memahami Complaint Workflow
+- Identifikasi sistem existing
+- Identifikasi API yang tersedia
+
+### Output
+
+- Business Flow Diagram
+- Use Case List
+- API Inventory
+- Requirement Document
+
+---
+
+## Phase 1 - Infrastruktur Dasar
+
+### 6 Juli – 24 Juli
+
+### Aktivitas
+
+- Setup Server Development
+- Setup Docker Compose
+- Setup PostgreSQL
+- Setup PGVector
+- Setup vLLM
+- Setup Monitoring
+
+### Output
+
+- Development Environment Ready
+
+---
+
+## Phase 2 - Knowledge Base & RAG
+
+### 13 Juli – 14 Agustus
+
+### Aktivitas
+
+- Mengumpulkan FAQ
+- Mengumpulkan SOP Hotel
+- Mengumpulkan SOP Refund
+- Mengumpulkan Ballroom Information
+- Membuat Pipeline Embedding
+- Implementasi Retrieval
+
+### Output
+
+AI dapat menjawab:
+
+- FAQ Hotel
+- Informasi Ballroom
+- Informasi Kebijakan Hotel
+
+---
+
+## Phase 3 - Intent Classification
+
+### 13 Juli – 21 Agustus
+
+### Aktivitas
+
+Membangun intent:
+
+- FAQ
+- Booking
+- Complaint
+- Cancellation
+- Refund
+- Sales Inquiry
+- Unknown
+
+### Output
+
+AI dapat menentukan tujuan customer.
+
+---
+
+## Phase 4 - Integrasi API Existing Hotel
+
+### 20 Juli – 25 September
+
+### Aktivitas
+
+Integrasi:
+
+- Booking API
+- Pricing API
+- Availability API
+- Complaint API
+- Refund API
+- CRM API (Jika tersedia)
+
+### Output
+
+Tool Calling dapat digunakan.
+
+---
+
+## Phase 5 - Booking Assistant
+
+### 17 Agustus – 18 September
+
+### Aktivitas
+
+Flow:
+
+- Cek hotel
+- Cek kamar
+- Cek harga
+- Cek ketersediaan
+- Booking Tracking
+
+### Output
+
+Booking Assistance berjalan.
+
+---
+
+## Phase 6 - Complaint Routing
+
+### 31 Agustus – 9 Oktober
+
+### Aktivitas
+
+Membangun routing:
+
+- Housekeeping
+- Engineering
+- Restaurant
+- Front Office
+
+### Output
+
+Keluhan otomatis dibuat menjadi tiket.
+
+---
+
+## Phase 7 - Cancellation & Refund
+
+### 14 September – 23 Oktober
+
+### Aktivitas
+
+- Form Pengajuan Refund
+- Integrasi RAG Policy
+- Ticket Creation
+- Workflow Finance
+
+### Output
+
+Refund Request berjalan otomatis.
+
+---
+
+## Phase 8 - WhatsApp Integration
+
+### 3 Agustus – 30 Oktober
+
+### Aktivitas
+
+- Meta Cloud API
+- Webhook
+- Session Management
+- Error Handling
+
+### Output
+
+Chatbot berjalan melalui WhatsApp.
+
+---
+
+## Phase 9 - Website Chat Integration
+
+### 21 September – 6 November
+
+### Aktivitas
+
+- Frontend Chat Widget
+- API Integration
+- Authentication
+- Session Management
+
+### Output
+
+Chatbot tersedia di website hotel.
+
+---
+
+## Phase 10 - Testing
+
+### 10 Agustus – 27 November
+
+### Aktivitas
+
+#### Functional Testing
+
+- FAQ
+- Booking
+- Complaint
+- Refund
+
+#### Integration Testing
+
+- API Existing
+- WhatsApp
+- Website
+
+#### AI Testing
+
+- Intent Accuracy
+- Hallucination Testing
+- RAG Accuracy
+
+### Output
+
+Daftar bug dan perbaikan.
+
+---
+
+## Phase 11 - UAT
+
+### 9 November – 27 November
+
+### User yang Terlibat
+
+- Front Office
+- Sales
+- Finance
+- Engineering
+- Housekeeping
+
+### Aktivitas
+
+- Simulasi kasus nyata
+- Pengumpulan feedback
+- Perbaikan bug
+
+### Output
+
+Persetujuan user bisnis.
+
+---
+
+## Phase 12 - Stabilization & Go Live
+
+### 30 November – 4 Desember
+
+### Aktivitas
+
+- Bug Fixing
+- Monitoring Setup
+- Backup Validation
+- Deployment Final
+
+### Output
+
+Go Live
+
+---
+
+# Buffer Time
+
+## Buffer Requirement Change
+
+Sepanjang proyek
+
+Estimasi:
+
+- 10 hari
+
+---
+
+## Buffer API Issue
+
+Sepanjang proyek
+
+Estimasi:
+
+- 5 hari
+
+---
+
+## Buffer Bug Fixing
+
+Sepanjang proyek
+
+Estimasi:
+
+- 5 hari
+
+---
+
+# Risiko Utama
+
+## Risiko 1
+
+API Existing Belum Siap
+
+Mitigasi:
+
+- Gunakan Mock API sejak awal
+
+---
+
+## Risiko 2
+
+Perubahan SOP Hotel
+
+Mitigasi:
+
+- Gunakan konfigurasi berbasis database
+
+---
+
+## Risiko 3
+
+RAG Memberikan Jawaban Salah
+
+Mitigasi:
+
+- Tambahkan source citation
+- Tambahkan confidence threshold
+
+---
+
+## Risiko 4
+
+Tool Calling Salah Routing
+
+Mitigasi:
+
+- Tambahkan approval manual pada proses kritikal
+
+---
+
+# Target Akhir Desember 2026
+
+## Customer
+
+Dapat:
+
+- Bertanya informasi hotel
+- Bertanya harga kamar
+- Bertanya harga ballroom
+- Mengecek ketersediaan kamar
+- Melakukan booking assistance
+- Membuat complaint
+- Mengajukan refund
+
+---
+
+## Front Office
+
+Beban pekerjaan berkurang karena:
+
+- FAQ dijawab AI
+- Complaint otomatis dibuat tiket
+- Booking inquiry dilayani AI
+
+---
+
+## Hotel Management
+
+Mendapatkan:
+
+- Centralized Chatbot
+- WhatsApp Channel
+- Website Chat
+- Complaint Tracking
+- Refund Tracking
+- Audit Trail

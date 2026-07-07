@@ -1,0 +1,154 @@
+{
+    "summary": {
+        "correct_sequences": 5,
+        "total_scenarios": 5,
+        "average_llm_calls": 5.8,
+        "tool_call_frequencies": {
+            "check_room_availability": 6,
+            "validate_booking_parameters": 5,
+            "create_booking_draft": 5,
+            "notify_sales": 5
+        }
+    },
+    "details": [
+        {
+            "scenario_id": 1,
+            "scenario_name": "Data lengkap dari awal",
+            "tool_sequence": [
+                "check_room_availability",
+                "validate_booking_parameters",
+                "create_booking_draft",
+                "notify_sales"
+            ],
+            "expected_tools_subset": [
+                "check_room_availability",
+                "validate_booking_parameters",
+                "create_booking_draft",
+                "notify_sales"
+            ],
+            "is_logical": true,
+            "asked_back": false,
+            "total_llm_calls": 4,
+            "final_response": "Hasil notify_sales: {\"notified\": true, \"booking_id\": \"TEST-001\", \"channel\": \"whatsapp\"}",
+            "collected_params": {
+                "guest_name": "Budi Santoso",
+                "check_in_date": "15 Juli",
+                "check_out_date": "17 Juli",
+                "room_type": "deluxe",
+                "num_guests": 2
+            },
+            "success": true,
+            "sequence_matches_expected": true
+        },
+        {
+            "scenario_id": 2,
+            "scenario_name": "Data tidak lengkap, butuh tanya balik",
+            "tool_sequence": [
+                "check_room_availability",
+                "validate_booking_parameters",
+                "create_booking_draft",
+                "notify_sales"
+            ],
+            "expected_tools_subset": [
+                "validate_booking_parameters"
+            ],
+            "is_logical": true,
+            "asked_back": true,
+            "total_llm_calls": 9,
+            "final_response": "Hasil notify_sales: {\"notified\": true, \"booking_id\": \"TEST-001\", \"channel\": \"whatsapp\"}",
+            "collected_params": {
+                "guest_name": "Siti Rahayu",
+                "check_in_date": "15 Juli",
+                "check_out_date": "17 Juli",
+                "room_type": "deluxe",
+                "num_guests": 2
+            },
+            "success": true,
+            "sequence_matches_expected": true
+        },
+        {
+            "scenario_id": 3,
+            "scenario_name": "User sebut tanggal relatif",
+            "tool_sequence": [
+                "check_room_availability",
+                "validate_booking_parameters",
+                "create_booking_draft",
+                "notify_sales"
+            ],
+            "expected_tools_subset": [
+                "check_room_availability",
+                "validate_booking_parameters",
+                "create_booking_draft",
+                "notify_sales"
+            ],
+            "is_logical": true,
+            "asked_back": false,
+            "total_llm_calls": 4,
+            "final_response": "Hasil notify_sales: {\"notified\": true, \"booking_id\": \"TEST-001\", \"channel\": \"whatsapp\"}",
+            "collected_params": {
+                "guest_name": "Ahmad",
+                "check_in_date": "besok",
+                "check_out_date": "besok",
+                "room_type": "standard",
+                "num_guests": 1
+            },
+            "success": true,
+            "sequence_matches_expected": true
+        },
+        {
+            "scenario_id": 4,
+            "scenario_name": "User ganti informasi di tengah",
+            "tool_sequence": [
+                "check_room_availability",
+                "check_room_availability",
+                "validate_booking_parameters",
+                "create_booking_draft",
+                "notify_sales"
+            ],
+            "expected_tools_subset": [
+                "validate_booking_parameters",
+                "create_booking_draft",
+                "notify_sales"
+            ],
+            "is_logical": true,
+            "asked_back": true,
+            "total_llm_calls": 8,
+            "final_response": "Hasil notify_sales: {\"notified\": true, \"booking_id\": \"TEST-001\", \"channel\": \"whatsapp\"}",
+            "collected_params": {
+                "guest_name": "Hendra Wijaya",
+                "check_in_date": "20 Juli",
+                "check_out_date": "22 Juli",
+                "room_type": "suite",
+                "num_guests": 2
+            },
+            "success": true,
+            "sequence_matches_expected": true
+        },
+        {
+            "scenario_id": 5,
+            "scenario_name": "Kamar tidak tersedia",
+            "tool_sequence": [
+                "check_room_availability",
+                "validate_booking_parameters",
+                "create_booking_draft",
+                "notify_sales"
+            ],
+            "expected_tools_subset": [
+                "check_room_availability"
+            ],
+            "is_logical": true,
+            "asked_back": false,
+            "total_llm_calls": 4,
+            "final_response": "Hasil notify_sales: {\"notified\": true, \"booking_id\": \"TEST-001\", \"channel\": \"whatsapp\"}",
+            "collected_params": {
+                "guest_name": "Kevin",
+                "check_in_date": "31 Desember",
+                "check_out_date": "3 Januari",
+                "room_type": "suite",
+                "num_guests": 2
+            },
+            "success": true,
+            "sequence_matches_expected": true
+        }
+    ]
+}

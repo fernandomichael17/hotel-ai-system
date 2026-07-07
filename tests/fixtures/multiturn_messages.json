@@ -1,0 +1,50 @@
+[
+    {
+        "history": [
+            {"role": "user", "content": "Apakah kamar Deluxe ada yang kosong besok?"},
+            {"role": "assistant", "content": "Ada, kak. Untuk tipe Deluxe tersedia mulai besok siang."}
+        ],
+        "message": "Kalau begitu tolong pesankan satu kamar atas nama Andi.",
+        "expected_intent": "booking_request"
+    },
+    {
+        "history": [
+            {"role": "user", "content": "Saya mau booking kamar Suite Room untuk 2 malam mulai hari Jumat besok."},
+            {"role": "assistant", "content": "Baik, booking atas nama siapa kak?"}
+        ],
+        "message": "Atas nama Joko Susilo ya.",
+        "expected_intent": "booking_request"
+    },
+    {
+        "history": [
+            {"role": "user", "content": "AC di kamar 302 bocor dan berisik sekali."},
+            {"role": "assistant", "content": "Mohon maaf atas ketidaknyamanannya. Tim teknisi kami akan segera ke kamar Anda untuk memeriksa."}
+        ],
+        "message": "Sudah 30 menit tapi kok belum datang juga ya?",
+        "expected_intent": "complaint"
+    },
+    {
+        "history": [
+            {"role": "user", "content": "Berapa nomor telepon untuk menghubungi resepsionis?"},
+            {"role": "assistant", "content": "Anda bisa menekan angka 0 langsung dari telepon di kamar Anda."}
+        ],
+        "message": "Kalau wifi passwordnya apa?",
+        "expected_intent": "faq"
+    },
+    {
+        "history": [
+            {"role": "user", "content": "Saya ingin membatalkan pemesanan kamar dengan kode booking HB-9821."},
+            {"role": "assistant", "content": "Baik, pembatalan dapat diproses. Apakah ada alasan pembatalannya?"}
+        ],
+        "message": "Saya ada dinas mendadak ke luar kota.",
+        "expected_intent": "cancellation"
+    },
+    {
+        "history": [
+            {"role": "user", "content": "Apakah uang muka yang sudah saya bayar bisa dikembalikan jika batal menginap?"},
+            {"role": "assistant", "content": "Bisa kak, pengembalian dana mengikuti kebijakan pembatalan H-3."}
+        ],
+        "message": "Bagaimana cara klaimnya?",
+        "expected_intent": "refund"
+    }
+]

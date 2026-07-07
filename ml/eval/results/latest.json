@@ -1,0 +1,839 @@
+{
+    "timestamp": "2026-06-29T17:02:52.658298",
+    "summary": {
+        "utama": {
+            "correct": 42,
+            "total": 46,
+            "accuracy": 0.9130434782608695
+        },
+        "test_a": {
+            "correct": 6,
+            "total": 6,
+            "accuracy": 1.0
+        },
+        "test_b": {
+            "correct": 6,
+            "total": 6,
+            "accuracy": 1.0
+        },
+        "test_c": {
+            "correct": 6,
+            "total": 6,
+            "accuracy": 1.0
+        }
+    },
+    "details": [
+        {
+            "suite": "utama",
+            "message": "Apakah hotel menyediakan layanan laundry baju?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah di hotel ini ada fasilitas kolam renang?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah diperbolehkan membawa hewan peliharaan ke dalam kamar?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah hotel ini menyediakan tempat parkir gratis?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah ada hair dryer di dalam kamar mandi?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah hotel dekat dengan stasiun kereta terdekat?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Di mana lokasi ruang sarapan pagi?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Jam berapa batas waktu check-in dan check-out?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Berapa nomor telepon untuk menghubungi resepsionis?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah wifi di kamar hotel ini gratis?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah ada kamar kosong tipe Deluxe untuk malam ini?",
+            "raw_response": "booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "booking_inquiry",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Berapa harga sewa kamar Family Room per malam?",
+            "raw_response": "booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "booking_inquiry",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Saya ingin tahu harga kamar Suite untuk tanggal 15 Agustus.",
+            "raw_response": "booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "booking_inquiry",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Berapa kapasitas maksimal orang untuk kamar tipe Standard?",
+            "raw_response": "faq",
+            "correct": false,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "faq",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah tarif kamar sudah termasuk sarapan pagi?",
+            "raw_response": "booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "booking_inquiry",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Tolong buatkan reservasi kamar Standard atas nama PT Mulia Abadi.",
+            "raw_response": "booking_request",
+            "correct": true,
+            "error": null,
+            "expected": "booking_request",
+            "predicted": "booking_request",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah ada promo khusus untuk pemesanan kamar bulan ini?",
+            "raw_response": "booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "booking_inquiry",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Tolong pesankan saya satu kamar Deluxe untuk tanggal 12 Juli atas nama Andi.",
+            "raw_response": "booking_request",
+            "correct": true,
+            "error": null,
+            "expected": "booking_request",
+            "predicted": "booking_request",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Ada tipe kamar apa saja yang tersedia untuk akhir pekan depan?",
+            "raw_response": "booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "booking_inquiry",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Berapa biaya tambahan jika saya memesan extra bed?",
+            "raw_response": "booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "booking_inquiry",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Saya mau booking kamar Suite Room untuk 2 malam mulai hari Jumat besok.",
+            "raw_response": "booking_request",
+            "correct": true,
+            "error": null,
+            "expected": "booking_request",
+            "predicted": "booking_request",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Saya ingin memesan Family Room untuk tanggal 20 sampai 22 September.",
+            "raw_response": "booking_request",
+            "correct": true,
+            "error": null,
+            "expected": "booking_request",
+            "predicted": "booking_request",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Bisa booking kamar Deluxe non-smoking untuk malam ini?",
+            "raw_response": "booking_request",
+            "correct": true,
+            "error": null,
+            "expected": "booking_request",
+            "predicted": "booking_request",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Air panas di kamar mandi kamar saya tidak berfungsi sejak tadi pagi.",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": "complaint",
+            "predicted": "complaint",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "AC di kamar 405 sangat panas dan mengeluarkan suara berisik.",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": "complaint",
+            "predicted": "complaint",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Lantai kamar saya masih sangat kotor dan banyak debu ketika check-in.",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": "complaint",
+            "predicted": "complaint",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Tolong amankan satu kamar termurah untuk besok pagi.",
+            "raw_response": "booking_request",
+            "correct": true,
+            "error": null,
+            "expected": "booking_request",
+            "predicted": "booking_request",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Bagaimana caranya melakukan pembatalan reservasi hotel untuk besok?",
+            "raw_response": "cancellation",
+            "correct": true,
+            "error": null,
+            "expected": "cancellation",
+            "predicted": "cancellation",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Pelayanan resepsionis saat check-in sangat tidak ramah dan lambat.",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": "complaint",
+            "predicted": "complaint",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Makanan sarapan hari ini rasanya hambar dan sudah dingin.",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": "complaint",
+            "predicted": "complaint",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Saya ingin membatalkan pemesanan kamar dengan kode booking HB-9821.",
+            "raw_response": "cancellation",
+            "correct": true,
+            "error": null,
+            "expected": "cancellation",
+            "predicted": "cancellation",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Kenapa pesanan handuk tambahan saya belum dikirim juga?",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": "complaint",
+            "predicted": "complaint",
+            "difficulty": "easy"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah uang muka yang sudah saya bayar bisa dikembalikan jika batal menginap?",
+            "raw_response": "refund",
+            "correct": true,
+            "error": null,
+            "expected": "refund",
+            "predicted": "refund",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Saya meminta pengembalian dana untuk reservasi kamar yang telah saya batalkan.",
+            "raw_response": "refund",
+            "correct": true,
+            "error": null,
+            "expected": "refund",
+            "predicted": "refund",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Bagaimana prosedur pengembalian uang pembayaran hotel yang batal?",
+            "raw_response": "refund",
+            "correct": true,
+            "error": null,
+            "expected": "refund",
+            "predicted": "refund",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Proses refund uang deposit kamar saya biasanya memakan waktu berapa lama?",
+            "raw_response": "faq",
+            "correct": false,
+            "error": null,
+            "expected": "refund",
+            "predicted": "faq",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Saya harus melakukan cancel booking kamar hotel yang dijadwalkan tanggal 5 Oktober.",
+            "raw_response": "cancellation",
+            "correct": true,
+            "error": null,
+            "expected": "cancellation",
+            "predicted": "cancellation",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Tolong batalkan pesanan kamar saya atas nama Budi karena ada acara mendesak.",
+            "raw_response": "cancellation",
+            "correct": true,
+            "error": null,
+            "expected": "cancellation",
+            "predicted": "cancellation",
+            "difficulty": "medium"
+        },
+        {
+            "suite": "utama",
+            "message": "Halo, selamat sore, saya ingin bertanya sesuatu.",
+            "raw_response": "unknown",
+            "correct": true,
+            "error": null,
+            "expected": "unknown",
+            "predicted": "unknown",
+            "difficulty": "hard"
+        },
+        {
+            "suite": "utama",
+            "message": "Berapa denda yang harus dibayar kalau saya membatalkan kamar?",
+            "raw_response": "cancellation",
+            "correct": false,
+            "error": null,
+            "expected": "faq",
+            "predicted": "cancellation",
+            "difficulty": "hard"
+        },
+        {
+            "suite": "utama",
+            "message": "Kamar saya bau rokok padahal saya pesan kamar non-smoking, tolong diganti.",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": "complaint",
+            "predicted": "complaint",
+            "difficulty": "hard"
+        },
+        {
+            "suite": "utama",
+            "message": "Saya mau merubah tanggal booking dari tanggal 10 menjadi tanggal 12.",
+            "raw_response": "booking_inquiry",
+            "correct": false,
+            "error": null,
+            "expected": "unknown",
+            "predicted": "booking_inquiry",
+            "difficulty": "hard"
+        },
+        {
+            "suite": "utama",
+            "message": "Saya ingin komplain mengenai refund deposit saya yang belum masuk.",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": "complaint",
+            "predicted": "complaint",
+            "difficulty": "hard"
+        },
+        {
+            "suite": "utama",
+            "message": "Apakah harga kamar deluxe bisa lebih murah kalau saya pesan sekarang?",
+            "raw_response": "booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": "booking_inquiry",
+            "predicted": "booking_inquiry",
+            "difficulty": "hard"
+        },
+        {
+            "suite": "utama",
+            "message": "Tolong kirimkan invoice pembayaran atas reservasi saya kemarin.",
+            "raw_response": "unknown",
+            "correct": true,
+            "error": null,
+            "expected": "unknown",
+            "predicted": "unknown",
+            "difficulty": "hard"
+        },
+        {
+            "suite": "utama",
+            "message": "Bagaimana cara menuju ke stasiun terdekat dari hotel?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "expected": "faq",
+            "predicted": "faq",
+            "difficulty": "hard"
+        },
+        {
+            "suite": "test_a",
+            "message": "Atas nama Joko Susilo ya.",
+            "raw_response": "booking_request",
+            "correct": true,
+            "error": null,
+            "history": [
+                {
+                    "role": "user",
+                    "content": "Saya mau booking kamar Suite Room untuk 2 malam mulai hari Jumat besok."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Baik, booking atas nama siapa kak?"
+                }
+            ],
+            "expected": "booking_request",
+            "predicted": "booking_request"
+        },
+        {
+            "suite": "test_a",
+            "message": "Kalau begitu tolong pesankan satu kamar atas nama Andi.",
+            "raw_response": "booking_request",
+            "correct": true,
+            "error": null,
+            "history": [
+                {
+                    "role": "user",
+                    "content": "Apakah kamar Deluxe ada yang kosong besok?"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Ada, kak. Untuk tipe Deluxe tersedia mulai besok siang."
+                }
+            ],
+            "expected": "booking_request",
+            "predicted": "booking_request"
+        },
+        {
+            "suite": "test_a",
+            "message": "Bagaimana cara klaimnya?",
+            "raw_response": "refund",
+            "correct": true,
+            "error": null,
+            "history": [
+                {
+                    "role": "user",
+                    "content": "Apakah uang muka yang sudah saya bayar bisa dikembalikan jika batal menginap?"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Bisa kak, pengembalian dana mengikuti kebijakan pembatalan H-3."
+                }
+            ],
+            "expected": "refund",
+            "predicted": "refund"
+        },
+        {
+            "suite": "test_a",
+            "message": "Kalau wifi passwordnya apa?",
+            "raw_response": "faq",
+            "correct": true,
+            "error": null,
+            "history": [
+                {
+                    "role": "user",
+                    "content": "Berapa nomor telepon untuk menghubungi resepsionis?"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Anda bisa menekan angka 0 langsung dari telepon di kamar Anda."
+                }
+            ],
+            "expected": "faq",
+            "predicted": "faq"
+        },
+        {
+            "suite": "test_a",
+            "message": "Sudah 30 menit tapi kok belum datang juga ya?",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "history": [
+                {
+                    "role": "user",
+                    "content": "AC di kamar 302 bocor dan berisik sekali."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Mohon maaf atas ketidaknyamanannya. Tim teknisi kami akan segera ke kamar Anda untuk memeriksa."
+                }
+            ],
+            "expected": "complaint",
+            "predicted": "complaint"
+        },
+        {
+            "suite": "test_a",
+            "message": "Saya ada dinas mendadak ke luar kota.",
+            "raw_response": "cancellation",
+            "correct": true,
+            "error": null,
+            "history": [
+                {
+                    "role": "user",
+                    "content": "Saya ingin membatalkan pemesanan kamar dengan kode booking HB-9821."
+                },
+                {
+                    "role": "assistant",
+                    "content": "Baik, pembatalan dapat diproses. Apakah ada alasan pembatalannya?"
+                }
+            ],
+            "expected": "cancellation",
+            "predicted": "cancellation"
+        },
+        {
+            "suite": "test_c",
+            "message": "Kamar saya kotor sekali dan AC nya mati, saya mau komplain.",
+            "raw_response": "complaint",
+            "correct": true,
+            "error": null,
+            "expected": [
+                "complaint"
+            ],
+            "predicted": [
+                "complaint"
+            ]
+        },
+        {
+            "suite": "test_c",
+            "message": "Saya ingin membatalkan reservasi saya, dan apakah uang saya bisa dikembalikan?",
+            "raw_response": "cancellation, refund",
+            "correct": true,
+            "error": null,
+            "expected": [
+                "cancellation",
+                "refund"
+            ],
+            "predicted": [
+                "cancellation",
+                "refund"
+            ]
+        },
+        {
+            "suite": "test_c",
+            "message": "Bagaimana cara melakukan refund untuk kamar yang dibatalkan?",
+            "raw_response": "cancellation, refund",
+            "correct": true,
+            "error": null,
+            "expected": [
+                "cancellation",
+                "refund"
+            ],
+            "predicted": [
+                "cancellation",
+                "refund"
+            ]
+        },
+        {
+            "suite": "test_c",
+            "message": "Berapa harga kamar deluxe dan saya mau langsung booking untuk besok atas nama Andi.",
+            "raw_response": "booking_inquiry, booking_request",
+            "correct": true,
+            "error": null,
+            "expected": [
+                "booking_inquiry",
+                "booking_request"
+            ],
+            "predicted": [
+                "booking_inquiry",
+                "booking_request"
+            ]
+        },
+        {
+            "suite": "test_c",
+            "message": "AC di kamar saya rusak, tolong kembalikan saja uang saya karena saya mau check-out sekarang.",
+            "raw_response": "complaint, refund",
+            "correct": true,
+            "error": null,
+            "expected": [
+                "complaint",
+                "refund"
+            ],
+            "predicted": [
+                "complaint",
+                "refund"
+            ]
+        },
+        {
+            "suite": "test_c",
+            "message": "Apakah ada kolam renang di hotel ini? Dan sekalian berapa biaya sewa kamar standard per malam?",
+            "raw_response": "faq, booking_inquiry",
+            "correct": true,
+            "error": null,
+            "expected": [
+                "faq",
+                "booking_inquiry"
+            ],
+            "predicted": [
+                "faq",
+                "booking_inquiry"
+            ]
+        },
+        {
+            "suite": "test_b",
+            "message": "Tolong pesankan kamar Suite atas nama Joko Widodo mulai besok.",
+            "raw_response": "{\n  \"name\": \"Joko Widodo\",\n  \"check_in_date\": \"besok\",\n  \"check_out_date\": null,\n  \"room_type\": \"suite\"\n}",
+            "correct": true,
+            "error": null,
+            "expected": {
+                "name": "Joko Widodo",
+                "check_in_date": "besok",
+                "check_out_date": null,
+                "room_type": "suite"
+            },
+            "predicted": {
+                "name": "Joko Widodo",
+                "check_in_date": "besok",
+                "check_out_date": null,
+                "room_type": "suite"
+            },
+            "param_matches": {
+                "name": true,
+                "check_in_date": true,
+                "check_out_date": true,
+                "room_type": true
+            }
+        },
+        {
+            "suite": "test_b",
+            "message": "Saya mau booking kamar Deluxe untuk tanggal 12 Juli sampai 15 Juli atas nama Budi.",
+            "raw_response": "{\n  \"name\": \"Budi\",\n  \"check_in_date\": \"12 Juli\",\n  \"check_out_date\": \"15 Juli\",\n  \"room_type\": \"deluxe\"\n}",
+            "correct": true,
+            "error": null,
+            "expected": {
+                "name": "Budi",
+                "check_in_date": "12 Juli",
+                "check_out_date": "15 Juli",
+                "room_type": "deluxe"
+            },
+            "predicted": {
+                "name": "Budi",
+                "check_in_date": "12 Juli",
+                "check_out_date": "15 Juli",
+                "room_type": "deluxe"
+            },
+            "param_matches": {
+                "name": true,
+                "check_in_date": true,
+                "check_out_date": true,
+                "room_type": true
+            }
+        },
+        {
+            "suite": "test_b",
+            "message": "Ada tipe kamar apa saja yang tersedia untuk tanggal 20 September?",
+            "raw_response": "{\n  \"name\": null,\n  \"check_in_date\": \"20 September\",\n  \"check_out_date\": null,\n  \"room_type\": null\n}",
+            "correct": true,
+            "error": null,
+            "expected": {
+                "name": null,
+                "check_in_date": "20 September",
+                "check_out_date": null,
+                "room_type": null
+            },
+            "predicted": {
+                "name": null,
+                "check_in_date": "20 September",
+                "check_out_date": null,
+                "room_type": null
+            },
+            "param_matches": {
+                "name": true,
+                "check_in_date": true,
+                "check_out_date": true,
+                "room_type": true
+            }
+        },
+        {
+            "suite": "test_b",
+            "message": "Bisa pesankan 1 Family Room mulai tanggal 25 Desember?",
+            "raw_response": "{\n  \"name\": null,\n  \"check_in_date\": \"25 Desember\",\n  \"check_out_date\": null,\n  \"room_type\": \"family room\"\n}",
+            "correct": true,
+            "error": null,
+            "expected": {
+                "name": null,
+                "check_in_date": "25 Desember",
+                "check_out_date": null,
+                "room_type": "family room"
+            },
+            "predicted": {
+                "name": null,
+                "check_in_date": "25 Desember",
+                "check_out_date": null,
+                "room_type": "family room"
+            },
+            "param_matches": {
+                "name": true,
+                "check_in_date": true,
+                "check_out_date": true,
+                "room_type": true
+            }
+        },
+        {
+            "suite": "test_b",
+            "message": "Saya mau booking kamar Standard atas nama Ani Lestari untuk tanggal 5 sampai 7 Agustus.",
+            "raw_response": "{\n  \"name\": \"Ani Lestari\",\n  \"check_in_date\": \"5 Agustus\",\n  \"check_out_date\": \"7 Agustus\",\n  \"room_type\": \"standard\"\n}",
+            "correct": true,
+            "error": null,
+            "expected": {
+                "name": "Ani Lestari",
+                "check_in_date": "5 Agustus",
+                "check_out_date": "7 Agustus",
+                "room_type": "standard"
+            },
+            "predicted": {
+                "name": "Ani Lestari",
+                "check_in_date": "5 Agustus",
+                "check_out_date": "7 Agustus",
+                "room_type": "standard"
+            },
+            "param_matches": {
+                "name": true,
+                "check_in_date": true,
+                "check_out_date": true,
+                "room_type": true
+            }
+        },
+        {
+            "suite": "test_b",
+            "message": "Halo, saya mau reservasi kamar Deluxe untuk akhir pekan ini atas nama Hendra Wijaya.",
+            "raw_response": "{\n  \"name\": \"Hendra Wijaya\",\n  \"check_in_date\": \"akhir pekan ini\",\n  \"check_out_date\": null,\n  \"room_type\": \"deluxe\"\n}",
+            "correct": true,
+            "error": null,
+            "expected": {
+                "name": "Hendra Wijaya",
+                "check_in_date": "akhir pekan ini",
+                "check_out_date": null,
+                "room_type": "deluxe"
+            },
+            "predicted": {
+                "name": "Hendra Wijaya",
+                "check_in_date": "akhir pekan ini",
+                "check_out_date": null,
+                "room_type": "deluxe"
+            },
+            "param_matches": {
+                "name": true,
+                "check_in_date": true,
+                "check_out_date": true,
+                "room_type": true
+            }
+        }
+    ]
+}
