@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # LLM
     llm_base_url: str = "http://localhost:8000"
     model_name: str = "hotel-llm"
-    embedding_model: str = "intfloat/multilingual-e5-base"
+    embedding_model: str = "jinaai/jina-embeddings-v5-text-nano"
 
     # HMS
     use_mock_hms: bool = True

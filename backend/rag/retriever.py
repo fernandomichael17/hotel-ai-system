@@ -1,36 +1,51 @@
-from typing import List, Dict, Any
-import uuid
-from sqlalchemy import select
-from ..db.database import AsyncSessionLocal
-from ..db.models import Document
-from ..integrations.llm.embedder import TextEmbedder
+from sqlalchemy.ext.asyncio import AsyncSession
+from backend.integrations.llm.embedder import embedder
+from backend.db.repositories.document_repo import DocumentRepository
 
 class RAGRetriever:
-    """Retriever for RAG workflow."""
+    """Retriever untuk mencari dan mencocokkan dokumen relevan berbasis kueri embedding."""
     
-    def __init__(self, embedder: TextEmbedder):
-        self.embedder = embedder
+    def __init__(self, db: AsyncSession):
+        self.repo = DocumentRepository(db)
         
-    async def retrieve(self, query: str, hotel_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Retrieve top k relevant documents for query."""
-        query_vec = await self.embedder.embed(query)
+    async def retrieve(
+        self,
+        query: str,
+        hotel_id: str,
+        top_k: int = 5,
+        min_score: float = 0.5
+    ) -> list[dict]:
+        """Melakukan pencarian dokumen paling relevan menggunakan pgvector cosine distance."""
+        query_embedding = embedder.embed(query)
         
-        async with AsyncSessionLocal() as db_session:
-            stmt = (
-                select(Document)
-                .where(Document.hotel_id == uuid.UUID(hotel_id))
-                .order_by(Document.embedding.cosine_distance(query_vec))
-                .limit(top_k)
+        results = await self.repo.similarity_search(
+            query_embedding=query_embedding,
+            hotel_id=hotel_id,
+            top_k=top_k,
+            min_score=min_score
+        )
+        return results
+        
+    async def retrieve_as_context(
+        self,
+        query: str,
+        hotel_id: str,
+        top_k: int = 5
+    ) -> str:
+        """Mengambil data kemiripan lalu memformatnya dalam bentuk list string terstruktur untuk prompt LLM."""
+        results = await self.retrieve(
+            query=query,
+            hotel_id=hotel_id,
+            top_k=top_k
+        )
+        
+        if not results:
+            return ""
+            
+        context_parts = []
+        for r in results:
+            context_parts.append(
+                f"[Sumber: {r['title']}]\n{r['content']}"
             )
             
-            result = await db_session.execute(stmt)
-            docs = result.scalars().all()
-            
-            return [
-                {
-                    "content": doc.content,
-                    "title": doc.title,
-                    "score": 0.0  # Optional: calculate actual similarity score if needed
-                }
-                for doc in docs
-            ]
+        return "\n\n".join(context_parts)

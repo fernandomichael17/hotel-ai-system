@@ -1,72 +1,100 @@
-Nama hotel: Hotel Demo Metland
-Lokasi: Jakarta Pusat, dekat Monas
-Kamar: Standard (Rp 500.000/malam), Deluxe (Rp 850.000/malam), Suite (Rp 1.500.000/malam)
-Check-in: 14.00 WIB
-Check-out: 12.00 WIB
-Fasilitas: kolam renang, gym, restoran, free wifi, parkir gratis
-Sarapan: termasuk untuk Deluxe dan Suite
-Kebijakan: no smoking, no pet
-Cancellation: gratis H-3, denda 50% H-2, denda 100% H-1 dan no-show
-Refund: diproses 7-14 hari kerja
-Ballroom: kapasitas 500 orang, tersedia untuk wedding dan meeting
-Kontak: hotel@demo-metland.com (021) 1234-5678
+1. INFORMASI UMUM HOTEL
+Nama: Hotel Demo Metland
+Lokasi: Jakarta Pusat, Jalan Medan Merdeka Barat No. 10, dekat Monumen Nasional (Monas). Lokasi strategis ini memudahkan akses ke pusat pemerintahan, stasiun kereta api Gambir, dan pusat perbelanjaan.
+Bintang: 4 bintang
+Check-in: Mulai pukul 14.00 WIB. Pendaftaran check-in memerlukan tanda pengenal resmi (KTP/Paspor) serta deposit jaminan berupa uang tunai atau kartu kredit.
+Check-out: Maksimal pukul 12.00 WIB.
+Kontak: (021) 1234-5678
+Email: info@demo-metland.com
 
-Q: Di mana lokasi Hotel Demo Metland?
-A: Hotel Demo Metland berlokasi di Jakarta Pusat, dekat dengan Monas.
+2. TIPE KAMAR & HARGA
+Tipe kamar yang tersedia di Hotel Demo Metland dirancang untuk memenuhi kenyamanan tamu:
+- Standard: Rp 500.000 per malam. Kamar seluas 24 meter persegi dengan pilihan tempat tidur Double atau Twin, pendingin ruangan (AC), shower dengan air panas, smart TV, dan pembuat kopi/teh. Harga belum termasuk sarapan.
+- Deluxe: Rp 850.000 per malam. Kamar seluas 32 meter persegi yang sudah termasuk paket sarapan pagi untuk 2 orang dewasa di Restoran Metland. Fasilitas tambahan mencakup mini bar, bathtub, sandal hotel, jubah mandi, dan pemandangan langsung ke arah Monas.
+- Suite: Rp 1.500.000 per malam. Kamar luas tipe apartemen berukuran 48 meter persegi. Harga ini sudah mencakup sarapan untuk 2 orang dewasa, ruang tamu terpisah, mesin kopi kapsul esensial, welcome fruit basket (keranjang buah selamat datang), serta prioritas akses ke lounge hotel.
+Kebijakan untuk anak:
+- Anak-anak di bawah usia 12 tahun tidak dikenakan biaya tambahan (gratis) jika menggunakan tempat tidur yang sudah tersedia di kamar (tanpa extra bed).
+- Tempat tidur tambahan (Extra bed) tersedia dengan biaya Rp 150.000 per malam, sudah termasuk tambahan 1 porsi sarapan pagi.
 
-Q: Jam berapa waktu check-in dan check-out?
-A: Waktu check-in adalah mulai pukul 14.00 WIB, sedangkan check-out maksimal pukul 12.00 WIB.
+3. FASILITAS HOTEL
+Hotel Demo Metland menyediakan fasilitas premium lengkap untuk menunjang kebutuhan liburan dan bisnis:
+- Kolam renang: Terletak di lantai 3 dengan area kolam dewasa dan anak. Buka setiap hari dari pukul 06.00 WIB hingga 22.00 WIB. Handuk kolam renang disediakan gratis di loket handuk.
+- Gym/fitness center: Pusat kebugaran modern dengan treadmill dan alat angkat beban di lantai 3. Buka setiap hari dari pukul 05.00 WIB hingga 23.00 WIB untuk seluruh tamu menginap.
+- Restoran (Metland Bistro): Menyajikan hidangan khas nusantara dan internasional di lantai dasar. Buka untuk sarapan (06.00-10.00 WIB), makan siang, dan makan malam hingga pukul 22.00 WIB.
+- Room service: Layanan pesan antar makanan ke kamar tersedia non-stop selama 24 jam.
+- Free WiFi: Akses internet nirkabel gratis berkecepatan tinggi tersedia di seluruh kamar dan area publik hotel.
+- Parkir gratis: Parkir gratis di area basement dan halaman luar bagi tamu menginap dengan melakukan validasi tiket parkir di resepsionis.
+- Business center: Layanan komputer, cetak dokumen, dan fotokopi yang terletak di dekat lobby.
+- Ballroom: Grand Ballroom megah di lantai 2 dengan kapasitas maksimal hingga 500 orang untuk berbagai keperluan acara.
 
-Q: Apakah ada fasilitas kolam renang?
-A: Ya, hotel kami dilengkapi dengan fasilitas kolam renang.
+4. KEBIJAKAN HOTEL
+Seluruh tamu wajib mematuhi aturan kenyamanan bersama berikut:
+- Merokok (Smoking): Area dalam kamar dan koridor hotel adalah kawasan bebas rokok (Non-Smoking). Pelanggaran akan dikenakan denda pembersihan kamar sebesar Rp 1.000.000. Area merokok khusus disediakan di teras luar lobby.
+- Hewan peliharaan: Hewan peliharaan tidak diperbolehkan dibawa masuk ke seluruh area hotel demi menjaga kebersihan.
+- Tamu tambahan: Tamu ekstra tanpa pemesanan kamar awal dikenakan tarif tambahan Rp 100.000 per malam per orang (tanpa fasilitas extra bed).
+- Late checkout (hingga pukul 15.00 WIB): Dikenakan biaya tambahan sebesar Rp 150.000 dengan konfirmasi resepsionis terlebih dahulu.
+- Late checkout (hingga pukul 18.00 WIB): Dikenakan biaya sebesar 50% dari tarif kamar harian yang berlaku saat itu.
 
-Q: Apakah WiFi tersedia secara gratis?
-A: Ya, free wifi tersedia untuk semua tamu hotel.
+5. PAKET UPSELL
+Tamu dapat memperkaya pengalaman menginap dengan membeli paket tambahan:
+- Paket Sarapan Pagi: Rp 100.000 per orang per hari (jika dibeli di luar tarif kamar standard).
+- Antar Jemput Bandara: Rp 250.000 per trip untuk rute Bandara Soekarno-Hatta (CGK) atau Halim Perdanakusuma (HLP) menggunakan mobil jenis MPV kapasitas 4 orang.
+- Dekorasi Kamar Spesial: Rp 350.000 untuk paket ulang tahun, dekorasi romantis/anniversary dengan balon, bunga mawar, dan ucapan khusus.
 
-Q: Apakah sarapan sudah termasuk dalam harga kamar?
-A: Sarapan sudah termasuk untuk kamar tipe Deluxe dan Suite. Untuk tipe Standard, sarapan belum termasuk.
+6. KEBIJAKAN CANCELLATION & REFUND
+- Pembatalan gratis (Free Cancellation): Tamu dapat membatalkan pesanan tanpa denda jika dilakukan minimal 3 hari sebelum tanggal check-in (H-3).
+- Denda 50%: Pembatalan yang dilakukan pada 2 hari sebelum tanggal check-in (H-2) dikenakan denda sebesar 50% dari total biaya menginap.
+- Denda 100% (No-Show): Pembatalan yang dilakukan pada 1 hari sebelum check-in (H-1) atau ketidakhadiran tanpa pembatalan akan dikenakan denda 100% (hangus).
+- Proses Refund: Pengembalian dana memerlukan waktu 7 hingga 14 hari kerja. Pengembalian akan diproses melalui metode transfer bank ke rekening asal pemesan.
 
-Q: Tipe kamar apa saja yang tersedia?
-A: Kami memiliki kamar tipe Standard (Rp 500.000/malam), Deluxe (Rp 850.000/malam), dan Suite (Rp 1.500.000/malam).
+7. BALLROOM & MEETING ROOM
+- Ballroom Grand: Kapasitas mencapai 500 orang dengan susunan kursi theater, atau 300 orang untuk banquet/meja bundar. Harga sewa mulai dari Rp 15.000.000 per hari (12 jam pemakaian).
+- Meeting Room A: Kapasitas hingga 20 orang. Harga sewa Rp 1.500.000 per hari.
+- Meeting Room B: Kapasitas hingga 40 orang. Harga sewa Rp 2.500.000 per hari.
+Fasilitas meeting sudah termasuk: Proyektor LCD, layar proyektor, sound system standard, flipchart, memo, pulpen, air mineral, serta 2x coffee break secara prasmanan.
 
-Q: Bolehkah saya membawa hewan peliharaan?
-A: Mohon maaf, kami memiliki kebijakan no pet, sehingga hewan peliharaan tidak diperbolehkan.
+8. FAQ UMUM (Pertanyaan yang Sering Diajukan)
+Q: Apakah ada kolam renang di Hotel Demo Metland?
+A: Ya, kolam renang kami terletak di lantai 3. Kolam renang dewasa dan anak-anak buka setiap hari dari pukul 06.00 hingga 22.00 WIB.
 
-Q: Apakah diperbolehkan merokok di dalam kamar?
-A: Kami menerapkan kebijakan no smoking di semua kamar.
+Q: Apakah WiFi tersedia secara gratis untuk tamu?
+A: Tentu saja. Layanan internet nirkabel (WiFi) berkecepatan tinggi dapat dinikmati gratis di seluruh kamar dan semua area publik hotel.
 
-Q: Bagaimana kebijakan pembatalan kamar (cancellation)?
-A: Pembatalan gratis dapat dilakukan maksimal H-3. Pembatalan pada H-2 dikenakan denda 50%, sedangkan pada H-1 dan no-show dikenakan denda 100%.
+Q: Apakah saya bisa melakukan early check-in?
+A: Waktu standar check-in adalah pukul 14.00 WIB. Early check-in sebelum jam tersebut bergantung pada ketersediaan kamar pada hari kedatangan dan mungkin dikenakan biaya tambahan.
 
-Q: Berapa lama proses refund?
-A: Proses pengembalian dana (refund) akan memakan waktu 7-14 hari kerja.
+Q: Apakah sarapan pagi sudah termasuk dalam harga kamar?
+A: Sarapan pagi sudah termasuk untuk tipe kamar Deluxe dan Suite untuk 2 orang dewasa. Sedangkan untuk tipe kamar Standard, harga kamar belum termasuk sarapan.
 
-Q: Apakah tersedia ballroom untuk acara pernikahan?
-A: Ya, kami memiliki ballroom dengan kapasitas 500 orang yang tersedia untuk wedding dan meeting.
+Q: Apakah merokok diperbolehkan di dalam kamar tidur?
+A: Tidak boleh. Seluruh kamar kami adalah kamar bebas asap rokok. Tamu hanya diizinkan merokok di area luar ruangan yang telah ditentukan di dekat lobby luar.
 
-Q: Berapa kapasitas ballroom yang tersedia?
-A: Ballroom kami dapat menampung hingga 500 orang.
+Q: Apakah hotel ini menyediakan layanan antar-jemput bandara?
+A: Ya, kami menyediakan layanan antar-jemput ke Bandara Soekarno-Hatta atau Halim Perdanakusuma dengan tarif Rp 250.000 per sekali jalan.
 
-Q: Bagaimana cara menghubungi pihak hotel?
-A: Anda dapat menghubungi kami melalui email di hotel@demo-metland.com atau telepon di (021) 1234-5678.
+Q: Bisakah saya membawa anjing atau kucing peliharaan saya?
+A: Demi menjaga kenyamanan dan kebersihan seluruh tamu, hewan peliharaan apa pun tidak diperbolehkan masuk ke area hotel.
 
-Q: Apakah tersedia tempat parkir?
-A: Ya, kami menyediakan fasilitas parkir gratis untuk tamu hotel.
+Q: Bagaimana cara saya mengajukan pengembalian dana pembatalan kamar?
+A: Anda dapat mengajukan refund ke resepsionis atau via email info@demo-metland.com. Dana refund akan diproses dalam waktu 7 hingga 14 hari kerja ke rekening bank Anda.
 
-Q: Apa saja fasilitas hotel selain kamar?
-A: Fasilitas kami meliputi kolam renang, gym, restoran, free wifi, dan parkir gratis.
+Q: Berapa kapasitas Grand Ballroom untuk acara pernikahan?
+A: Grand Ballroom kami mampu menampung hingga 500 orang dengan model berdiri (theater style) atau 300 orang dengan konsep duduk (banquet style).
 
-Q: Berapa harga kamar Deluxe per malam?
-A: Harga kamar Deluxe adalah Rp 850.000/malam.
+Q: Apakah disediakan tempat tidur bayi di kamar?
+A: Ya, baby cot (tempat tidur bayi) tersedia gratis namun dalam jumlah terbatas. Silakan lakukan pemesanan terlebih dahulu sebelum tanggal check-in.
 
-Q: Berapa harga kamar Suite per malam?
-A: Harga kamar Suite adalah Rp 1.500.000/malam.
+Q: Apakah hotel ini ramah untuk pengguna kursi roda?
+A: Ya, kami memiliki akses ramp untuk kursi roda di pintu masuk lobby, lift luas, serta kamar tipe khusus yang ramah disabilitas.
 
-Q: Apakah saya bisa check-out lebih lambat dari jam 12.00?
-A: Waktu check-out standar adalah pukul 12.00 WIB. Untuk permintaan late check-out, harap menghubungi resepsionis.
+Q: Jam berapa restoran hotel buka untuk sarapan pagi?
+A: Restoran Metland Bistro melayani sarapan pagi prasmanan mulai pukul 06.00 WIB sampai dengan 10.00 WIB setiap harinya.
 
-Q: Jika saya memesan kamar Standard, apakah bisa mendapat sarapan?
-A: Kamar Standard belum termasuk sarapan. Anda bisa memesan sarapan terpisah di restoran kami.
+Q: Apakah tamu luar yang tidak menginap bisa menggunakan fasilitas kolam renang atau gym?
+A: Fasilitas kolam renang dan fitness center kami khusus didedikasikan secara gratis untuk tamu yang sedang menginap di hotel.
 
-Q: Apakah hotel ini ramah anak?
-A: Ya, dengan fasilitas seperti kolam renang, hotel kami cocok untuk keluarga dan ramah anak.
+Q: Apakah disediakan brankas penyimpanan di dalam kamar?
+A: Ya, setiap kamar dilengkapi dengan Safe Deposit Box (brankas mini digital) yang terletak di dalam lemari pakaian utama.
+
+Q: Bagaimana jika saya ingin check-out terlambat?
+A: Late check-out hingga pukul 15.00 WIB dikenakan biaya tambahan Rp 150.000. Untuk check-out hingga pukul 18.00 WIB dikenakan biaya 50% dari harga sewa kamar harian.

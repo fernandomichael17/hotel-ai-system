@@ -15,6 +15,7 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 docling==2.5.0
 sentence-transformers==3.0.0
+peft==0.11.1
 torch==2.3.0
 numpy==1.26.4
 apscheduler==3.10.4

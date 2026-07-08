@@ -1,22 +1,71 @@
 from sentence_transformers import SentenceTransformer
-from typing import List
+from backend.config import settings
+import numpy as np
 
 class TextEmbedder:
-    """Embedder using sentence-transformers for multilingual-e5-base."""
+    """
+    Singleton embedder untuk menghasilkan representasi vektor (embeddings) dari teks.
     
-    def __init__(self, model_name: str = "intfloat/multilingual-e5-base"):
-        # Load the model
-        self.model = SentenceTransformer(model_name)
+    Menggunakan library sentence-transformers dengan model lokal yang di-load 
+    sekali saat inisialisasi awal aplikasi demi optimalisasi performa komputasi.
+    """
+    _instance = None
+    _model = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._model = SentenceTransformer(
+                settings.embedding_model,
+                trust_remote_code=True
+            )
+        return cls._instance
+    
+    def embed(self, text: str) -> list[float]:
+        """
+        Mengonversi kueri teks pengguna ke dalam bentuk embedding 768 dimensi.
         
-    async def embed(self, text: str) -> List[float]:
-        """Embed a single text string."""
-        # Note: sentence_transformers is synchronous, we wrap it in async for the interface
-        embedding = self.model.encode("query: " + text, normalize_embeddings=True)
+        Secara otomatis menambahkan prefix 'query: ' untuk model retrieval.
+        """
+        prefixed = f"query: {text}"
+        embedding = self._model.encode(
+            prefixed,
+            normalize_embeddings=True
+        )
         return embedding.tolist()
+    
+    def embed_passage(self, text: str) -> list[float]:
+        """
+        Mengonversi teks dokumen ke dalam bentuk embedding 768 dimensi.
         
-    async def embed_batch(self, texts: List[str]) -> List[List[float]]:
-        """Embed a batch of text strings."""
-        # Prepend query: to texts as required by e5 models for retrieval
-        formatted_texts = ["query: " + t for t in texts]
-        embeddings = self.model.encode(formatted_texts, normalize_embeddings=True)
+        Secara otomatis menambahkan prefix 'passage: ' untuk dokumen penjelas.
+        """
+        prefixed = f"passage: {text}"
+        embedding = self._model.encode(
+            prefixed,
+            normalize_embeddings=True
+        )
+        return embedding.tolist()
+    
+    def embed_batch(
+        self,
+        texts: list[str],
+        is_passage: bool = True,
+        batch_size: int = 32
+    ) -> list[list[float]]:
+        """
+        Mengembed kumpulan teks secara bersamaan untuk mempercepat proses tokenisasi berkas RAG.
+        """
+        prefix = "passage: " if is_passage else "query: "
+        prefixed = [f"{prefix}{t}" for t in texts]
+        
+        embeddings = self._model.encode(
+            prefixed,
+            batch_size=batch_size,
+            normalize_embeddings=True,
+            show_progress_bar=len(texts) > 10
+        )
         return embeddings.tolist()
+
+# Singleton instance
+embedder = TextEmbedder()
