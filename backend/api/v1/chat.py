@@ -17,13 +17,13 @@ from ...core.workflows.faq.handler import FAQHandler
 channel_resolver = ChannelResolver()
 session_manager = SessionManager()
 context_enricher = ContextEnricher()
-intent_classifier = IntentClassifier() # Assumes this can be initialized without args
+llm_client = LLMClient()
+intent_classifier = IntentClassifier(llm_client=llm_client)
 fallback_handler = FallbackHandler()
 response_formatter = ResponseFormatter()
 
 # RAG & Workflow handlers
 text_embedder = TextEmbedder()
-llm_client = LLMClient()
 rag_retriever = RAGRetriever(embedder=text_embedder)
 faq_handler = FAQHandler(llm_client=llm_client, retriever=rag_retriever, session_manager=session_manager)
 

@@ -1,29 +1,57 @@
-version: '3.8'
+version: "3.8"
 
 services:
+
   postgres:
     image: pgvector/pgvector:pg16
+    container_name: hotel_postgres
     environment:
       POSTGRES_DB: hotel_chatbot
       POSTGRES_USER: hotel_user
       POSTGRES_PASSWORD: hotel_pass
-    ports: 
-      - "5432:5432"
-    volumes: 
+    ports:
+      - "5433:5432"
+    volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hotel_user -d hotel_chatbot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  waha:
+    image: devlikeapro/waha
+    container_name: hotel_waha
+    ports:
+      - "3000:3000"
+    volumes:
+      - waha_data:/app/.sessions
+    environment:
+      - WHATSAPP_DEFAULT_ENGINE=WEBJS
+      - WHATSAPP_HOOK_URL=http://backend:8001/api/v1/webhook/whatsapp
+      - WAHA_DASHBOARD_ENABLED=true
+    restart: unless-stopped
 
   backend:
-    build: 
-      context: ./backend
-    ports: 
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: hotel_backend
+    ports:
       - "8001:8001"
-    depends_on: 
-      - postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://hotel_user:hotel_pass@postgres:5432/hotel_chatbot
+      - LLM_BASE_URL=http://host.docker.internal:8000
+      - WAHA_URL=http://waha:3000
     env_file:
-      - .env
-    volumes: 
-      - ./backend:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+      - ../.env
+    volumes:
+      - ..:/app
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  waha_data:

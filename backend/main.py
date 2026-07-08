@@ -1,25 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from .config import settings
-from .db.database import init_db
-from .api.v1 import chat, webhook, admin
-from .api.portal import auth, documents, hotels
+from backend.config import settings
+from backend.db.database import init_db, check_db_connection
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Lifespan event to handle application startup and shutdown."""
-    await init_db()
-    yield
+# Import router-router yang didefinisikan
+from backend.api.v1.chat import router as chat_router
+from backend.api.v1.webhook import router as webhook_router
+from backend.api.v1.admin import router as admin_router
+from backend.api.portal.auth import router as auth_router
+from backend.api.portal.documents import router as documents_router
+from backend.api.portal.hotels import router as hotels_router
 
 app = FastAPI(
     title="Hotel AI Chatbot",
-    description="Backend API for Hotel AI Chatbot System",
-    version="1.0.0",
-    lifespan=lifespan
+    description="Metland Hotel Group AI Assistant",
+    version="0.1.0"
 )
 
-# Setup CORS for development
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,15 +26,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(chat.router, prefix="/api/v1", tags=["Chat"])
-app.include_router(webhook.router, prefix="/api/v1", tags=["Webhook"])
-app.include_router(admin.router, prefix="/api/v1", tags=["Admin"])
-app.include_router(auth.router, prefix="/api/portal", tags=["Portal Auth"])
-app.include_router(documents.router, prefix="/api/portal", tags=["Portal Documents"])
-app.include_router(hotels.router, prefix="/api/portal", tags=["Portal Hotels"])
+@app.on_event("startup")
+async def startup_event():
+    """
+    Event handler saat aplikasi FastAPI pertama kali dijalankan.
+    Menginisialisasi tabel database dan melakukan logging status server.
+    """
+    await init_db()
+    print("Database initialized")
+    print("Server ready")
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "ok", "model": settings.model_name}
+    """
+    Endpoint health check untuk memonitor kesehatan aplikasi dan koneksi database.
+    """
+    db_healthy = await check_db_connection()
+    return {
+        "status": "ok",
+        "version": "0.1.0",
+        "model": settings.model_name,
+        "mock_hms": settings.use_mock_hms,
+        "db": db_healthy
+    }
+
+@app.get("/")
+async def root():
+    """
+    Endpoint root yang menampilkan pesan pembuka API.
+    """
+    return {"message": "Hotel AI Chatbot API"}
+
+# Include routers dengan prefix masing-masing
+app.include_router(chat_router, prefix="/api/v1")
+app.include_router(webhook_router, prefix="/api/v1")
+app.include_router(admin_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/portal")
+app.include_router(documents_router, prefix="/portal")
+app.include_router(hotels_router, prefix="/portal")
