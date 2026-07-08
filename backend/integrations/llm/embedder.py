@@ -17,7 +17,8 @@ class TextEmbedder:
             cls._instance = super().__new__(cls)
             cls._model = SentenceTransformer(
                 settings.embedding_model,
-                trust_remote_code=True
+                trust_remote_code=True,
+                model_kwargs={'default_task': 'retrieval'}
             )
         return cls._instance
     
