@@ -63,6 +63,11 @@ class Settings(BaseSettings):
     debug: bool = False
     app_port: int = 8001
 
+    # Portal Admin
+    portal_password: str = "admin123"
+    jwt_expire_hours: int = 24
+    allowed_origins: list[str] = ["*"]
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
