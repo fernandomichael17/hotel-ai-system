@@ -28,7 +28,7 @@ class SessionRepository:
                 Session.hotel_id == hotel_id,
                 Session.status == "active",
                 (Session.expires_at == None) | (Session.expires_at > now)
-            ).order_by(Session.created_at.desc()).limit(1)
+            ).order_by(Session.created_at.desc()).limit(1).with_for_update()
         )
         return result.scalar_one_or_none()
         

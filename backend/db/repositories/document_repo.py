@@ -95,22 +95,29 @@ class DocumentRepository:
     async def similarity_search(self, query_embedding: List[float], hotel_id: UUID, 
                                 top_k: int = 5, min_score: float = 0.5) -> List[dict]:
         """Melakukan pencarian dokumen RAG menggunakan pgvector operator (<=>)."""
-        cosine_dist = Document.embedding.cosine_distance(query_embedding)
-        score = 1.0 - cosine_dist
-        stmt = (
-            select(
-                Document.id,
-                Document.title,
-                Document.content,
-                score.label("score")
-            )
-            .where(Document.hotel_id == hotel_id, Document.is_active == True)
-            .order_by(cosine_dist)
-            .limit(top_k)
-        )
-        result = await self.db.execute(stmt)
-        rows = result.all()
+        import logging
+        logger = logging.getLogger(__name__)
         
+        try:
+            cosine_dist = Document.embedding.cosine_distance(query_embedding)
+            score = 1.0 - cosine_dist
+            stmt = (
+                select(
+                    Document.id,
+                    Document.title,
+                    Document.content,
+                    score.label("score")
+                )
+                .where(Document.hotel_id == hotel_id, Document.is_active == True)
+                .order_by(cosine_dist)
+                .limit(top_k)
+            )
+            result = await self.db.execute(stmt)
+            rows = result.all()
+        except Exception as e:
+            logger.error(f"Error saat melakukan similarity_search pgvector: {str(e)}", exc_info=True)
+            return []
+            
         docs = []
         for row in rows:
             score_val = float(row.score) if row.score is not None else 0.0

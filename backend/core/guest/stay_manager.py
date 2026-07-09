@@ -107,21 +107,19 @@ class StayManager:
         
     async def auto_checkout_expired(self) -> int:
         """Menyelesaikan inap (checkout) secara otomatis jika tanggal check_out terlampaui."""
+        from sqlalchemy import update
         today = date.today()
-        stmt = select(GuestStay).where(
-            GuestStay.status == "checked_in",
-            GuestStay.check_out_date < today
+        stmt = (
+            update(GuestStay)
+            .where(
+                GuestStay.status == "checked_in",
+                GuestStay.check_out_date < today
+            )
+            .values(
+                status="checked_out",
+                updated_at=datetime.utcnow()
+            )
         )
         result = await self.db.execute(stmt)
-        expired_stays = result.scalars().all()
-        
-        count = 0
-        for stay in expired_stays:
-            stay.status = "checked_out"
-            stay.updated_at = datetime.utcnow()
-            count += 1
-            
-        if count > 0:
-            await self.db.commit()
-            
-        return count
+        await self.db.commit()
+        return result.rowcount

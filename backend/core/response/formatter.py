@@ -33,7 +33,6 @@ class ResponseFormatter:
         if len(content) <= self.MAX_WA_LENGTH:
             return content
         
-        truncated = content[:self.MAX_WA_LENGTH - 50]
-        return truncated + \
-               "\n\n_(pesan terpotong — " \
-               "hubungi staff untuk info lengkap)_"
+        from backend.core.response.templates import TRUNCATION_NOTE
+        truncated = content[:self.MAX_WA_LENGTH - len(TRUNCATION_NOTE)]
+        return truncated + TRUNCATION_NOTE

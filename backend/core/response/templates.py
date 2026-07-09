@@ -110,3 +110,6 @@ _Atau hubungi langsung:_
 SYSTEM_ERROR = """Maaf, terjadi gangguan 
 teknis. Silakan coba lagi atau hubungi 
 kami langsung di 📞 {phone}"""
+
+# Formatting
+TRUNCATION_NOTE = "\n\n_(pesan terpotong — hubungi staff untuk info lengkap)_"
