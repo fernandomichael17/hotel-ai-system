@@ -209,7 +209,7 @@ async def test_faq(
         FAQ_SYSTEM_PROMPT,
         FAQ_USER_PROMPT
     )
-    from backend.integrations.llm.client import LLMClient
+    from backend.integrations.llm.client import get_llm_client
     
     retriever = RAGRetriever(db)
     
@@ -239,7 +239,7 @@ async def test_faq(
     ])
     
     # 3. Generate answer
-    llm = LLMClient()
+    llm = get_llm_client()
     system = FAQ_SYSTEM_PROMPT.format(
         hotel_name=current_hotel.hotel_name
     )

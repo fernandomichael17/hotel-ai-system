@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.channel.context import ConversationContext
 from backend.core.workflows.faq.retriever import FAQRetriever
 from backend.core.response.templates import FAQ_NO_RESULT
-from backend.integrations.llm.client import LLMClient
+from backend.integrations.llm.client import get_llm_client
 
 FAQ_SYSTEM_PROMPT = """Kamu adalah asisten hotel {hotel_name} yang membantu tamu dengan informasi hotel.
 
@@ -26,7 +26,7 @@ class FAQHandler:
     
     def __init__(self, db: AsyncSession):
         self.retriever = FAQRetriever(db)
-        self.llm = LLMClient()
+        self.llm = get_llm_client()
     
     async def handle(
         self,

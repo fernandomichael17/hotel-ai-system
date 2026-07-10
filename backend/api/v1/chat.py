@@ -10,10 +10,19 @@ from backend.core.channel.context import ConversationContext
 from backend.core.session.manager import SessionManager
 from backend.core.session.context_enricher import ContextEnricher
 from backend.core.classifier.intent_classifier import IntentClassifier
-from backend.integrations.llm.client import LLMClient
+from backend.integrations.llm.client import get_llm_client
 from backend.core.response.formatter import ResponseFormatter
 from backend.core.response.fallback_handler import FallbackHandler
 from backend.core.response.templates import SYSTEM_ERROR
+
+_intent_classifier_instance = None
+
+def get_intent_classifier(llm_client) -> IntentClassifier:
+    """Helper singleton untuk mendapatkan instansi tunggal IntentClassifier."""
+    global _intent_classifier_instance
+    if _intent_classifier_instance is None:
+        _intent_classifier_instance = IntentClassifier(llm_client=llm_client)
+    return _intent_classifier_instance
 
 # Workflows
 from backend.core.workflows.faq.handler import FAQHandler
@@ -91,6 +100,13 @@ async def chat(
         # 4. Get history
         history = await session_mgr.get_history_for_llm(session.session_id)
         
+        # Cek apakah ada workflow aktif
+        from backend.db.repositories.booking_repo import BookingRepository
+        from uuid import UUID
+        booking_repo = BookingRepository(db)
+        active_draft = await booking_repo.find_active_draft(UUID(session.session_id))
+        has_active_workflow = active_draft is not None
+        
         # 5. Build context
         from backend.core.channel.schemas import IncomingMessage
         incoming = IncomingMessage(
@@ -135,11 +151,14 @@ async def chat(
             )
         
         # 7. Check menu selection
-        menu_intent = fallback.handle_menu_selection(request.message)
+        menu_intent = fallback.handle_menu_selection(
+            message=request.message,
+            has_active_workflow=has_active_workflow
+        )
         
         # 8. Classify intent
-        llm = LLMClient()
-        classifier = IntentClassifier(llm_client=llm)
+        llm = get_llm_client()
+        classifier = get_intent_classifier(llm)
         if menu_intent:
             intent = menu_intent
             confidence = 1.0

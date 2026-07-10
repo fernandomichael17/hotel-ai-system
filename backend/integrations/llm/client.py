@@ -97,3 +97,13 @@ class LLMClient:
             raise ValueError("Respons dari LLM kosong.")
 
         return content.strip()
+
+# Singleton instance
+_llm_client_instance = None
+
+def get_llm_client() -> LLMClient:
+    """Fungsi helper untuk menginstansiasi dan mengembalikan singleton instance dari LLMClient."""
+    global _llm_client_instance
+    if _llm_client_instance is None:
+        _llm_client_instance = LLMClient()
+    return _llm_client_instance

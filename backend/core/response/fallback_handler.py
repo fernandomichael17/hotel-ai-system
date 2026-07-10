@@ -1,3 +1,4 @@
+import re
 from backend.core.response.templates import (
     FALLBACK_OPTIONS,
     ESCALATE_TO_HUMAN
@@ -5,9 +6,8 @@ from backend.core.response.templates import (
 
 CONFIDENCE_THRESHOLD = 0.6
 ESCALATE_KEYWORDS = [
-    "staff", "human", "manusia",
-    "cs", "operator", "petugas",
-    "front office", "fo", "resepsionis"
+    "staff", "cs", "operator", "front office", "fo",
+    "human", "bantuan langsung", "bicara langsung", "hubungi langsung"
 ]
 
 class FallbackHandler:
@@ -24,12 +24,14 @@ class FallbackHandler:
         self,
         message: str
     ) -> bool:
-        """Memeriksa apakah pesan mengandung permintaan eskalasi ke staff manusia."""
+        """Memeriksa apakah pesan mengandung permintaan eskalasi ke staff manusia dengan batas kata yang ketat."""
         msg_lower = message.lower()
-        return any(
-            kw in msg_lower
-            for kw in ESCALATE_KEYWORDS
-        )
+        for kw in ESCALATE_KEYWORDS:
+            # Cek kata kunci yang berdiri sendiri (word boundary)
+            pattern = r'\b' + re.escape(kw) + r'\b'
+            if re.search(pattern, msg_lower):
+                return True
+        return False
     
     def get_fallback_response(
         self,
@@ -49,12 +51,15 @@ class FallbackHandler:
     
     def handle_menu_selection(
         self,
-        message: str
+        message: str,
+        has_active_workflow: bool = False
     ) -> str | None:
         """
-        Menyaring masukan pilihan menu numerik dari user (1-5).
-        Mengembalikan jenis intent string yang bersangkutan.
+        Menyaring masukan pilihan menu numerik dari user (1-5) dengan mendeteksi workflow aktif.
         """
+        if has_active_workflow:
+            return None
+            
         msg = message.strip()
         menu_map = {
             "1": "faq",
