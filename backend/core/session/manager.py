@@ -7,11 +7,14 @@ from backend.core.session.schemas import (
 from backend.db.repositories.session_repo import (
     SessionRepository
 )
+from backend.core.workflows.booking.schemas import BookingState
 
 MAX_HISTORY = 10  # Maksimal pesan ke LLM
 
 class SessionManager:
     """Manajer sesi untuk melacak dan menyimpan histori percakapan tamu."""
+    
+    _booking_states: dict = {}
     
     def __init__(self, db: AsyncSession):
         self.repo = SessionRepository(db)
@@ -96,3 +99,35 @@ class SessionManager:
     async def expire_sessions(self) -> int:
         """Mematikan semua sesi aktif yang telah melewati batas kedaluwarsa waktu."""
         return await self.repo.expire_old_sessions()
+
+    async def get_booking_state(
+        self,
+        session_id: str
+    ) -> BookingState | None:
+        """
+        Mengambil BookingState in-memory berdasarkan session_id.
+        """
+        state_dict = self._booking_states.get(session_id)
+        if state_dict is None:
+            return None
+        return BookingState.model_validate(state_dict)
+
+    async def save_booking_state(
+        self,
+        session_id: str,
+        state: BookingState
+    ) -> None:
+        """
+        Menyimpan BookingState in-memory berdasarkan session_id.
+        """
+        self._booking_states[session_id] = state.model_dump()
+
+    async def clear_booking_state(
+        self,
+        session_id: str
+    ) -> None:
+        """
+        Menghapus BookingState in-memory berdasarkan session_id.
+        """
+        if session_id in self._booking_states:
+            del self._booking_states[session_id]
