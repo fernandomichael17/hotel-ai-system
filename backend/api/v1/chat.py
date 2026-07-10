@@ -1,5 +1,6 @@
 import time
 import logging
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -100,12 +101,9 @@ async def chat(
         # 4. Get history
         history = await session_mgr.get_history_for_llm(session.session_id)
         
-        # Cek apakah ada workflow aktif
-        from backend.db.repositories.booking_repo import BookingRepository
-        from uuid import UUID
-        booking_repo = BookingRepository(db)
-        active_draft = await booking_repo.find_active_draft(UUID(session.session_id))
-        has_active_workflow = active_draft is not None
+        # Cek apakah ada workflow aktif di in-memory cache
+        booking_state = await session_mgr.get_booking_state(session.session_id)
+        has_active_workflow = booking_state is not None
         
         # 5. Build context
         from backend.core.channel.schemas import IncomingMessage
@@ -166,6 +164,32 @@ async def chat(
             result = classifier.classify(request.message)
             intent = result.intent.value
             confidence = result.confidence
+            
+        # Jika sedang di dalam workflow booking aktif, kita override ke booking_request
+        # HANYA jika intent asli adalah unknown, booking_inquiry, booking_request, atau greeting.
+        # Jika intent asli adalah faq/komplain dll, biarkan agar tamu mendapat info/layanan tersebut dahulu.
+        if has_active_workflow:
+            if intent in ["unknown", "booking_inquiry", "booking_request", "greeting"]:
+                intent = "booking_request"
+                confidence = 1.0
+            
+        # Reroute booking_inquiry / booking_request ke faq jika tidak ada tanggal check-in pada sesi baru dan menanyakan informasi (tipe/harga)
+        if intent in ["booking_inquiry", "booking_request"]:
+            state = await session_mgr.get_booking_state(session.session_id)
+            if not state:
+                from backend.core.workflows.booking.form_collector import BookingFormCollector
+                from backend.core.workflows.booking.schemas import BookingState
+                collector = BookingFormCollector()
+                temp_state = BookingState()
+                extracted = await collector.extract_params(request.message, temp_state)
+                
+                if not extracted.check_in_date:
+                    is_asking_info = intent == "booking_inquiry" or any(
+                        kw in request.message.lower() for kw in ["apa", "berapa", "mana", "harga", "tarif", "tipe", "fasilitas", "list", "daftar"]
+                    )
+                    if is_asking_info:
+                        logger.info(f"Booking intent '{intent}' dialihkan ke 'faq' karena check_in_date kosong dan menanyakan informasi/harga.")
+                        intent = "faq"
         
         # 9. Check fallback
         if fallback.should_fallback(confidence):
@@ -205,7 +229,45 @@ async def chat(
         
         handler = handler_map.get(intent)
         
-        if handler:
+        if intent == "greeting":
+            hotel_name = hotel_ctx.name if hasattr(hotel_ctx, 'name') else hotel_ctx.hotel_name
+            msg_lower = request.message.lower()
+            
+            # Deteksi jika tamu menyatakan ingin bertanya sesuatu
+            is_ask_starter = any(word in msg_lower for word in ["tanya", "nanya", "ask", "question", "want to know", "want to ask"])
+            
+            if is_ask_starter:
+                system_prompt = (
+                    f"Kamu adalah chatbot asisten hotel {hotel_name} yang sangat ramah. "
+                    "JANGAN menyapa user dengan 'Halo', 'Hi', 'Selamat pagi/siang/malam', atau mengucapkan salam pembuka lagi karena user menyatakan ingin langsung bertanya. "
+                    "Langsung persilakan tamu untuk bertanya secara sangat sopan, kreatif, dan natural. "
+                    "Beri tahu tamu secara singkat bahwa mereka dapat bertanya tentang fasilitas hotel (seperti WiFi, kolam renang, gym, restoran), "
+                    "tarif/tipe kamar, kebijakan hotel, atau bantuan pemesanan kamar (booking)."
+                )
+            else:
+                system_prompt = (
+                    f"Kamu adalah chatbot asisten hotel {hotel_name} yang sangat ramah. "
+                    "Balas sapaan tamu secara kreatif, sopan, dan hangat. "
+                    "Jawab menggunakan bahasa yang sama dengan sapaan tamu (misal Indonesia balas Indonesia, Inggris balas Inggris, dll). "
+                    "Beritahu tamu secara singkat bahwa kamu siap membantu memberikan info hotel/fasilitas, harga kamar, atau membantu melakukan booking."
+                )
+                
+            prompt = (
+                f"Instruksi:\n{system_prompt}\n\n"
+                f"Pesan tamu: \"{request.message}\"\n"
+                "Jawaban ramah:"
+            )
+            try:
+                res = await asyncio.to_thread(llm.generate, prompt)
+                response_text = res.strip()
+            except Exception as e:
+                logger.warning(f"Gagal generate greeting via LLM: {str(e)}. Menggunakan fallback static.", exc_info=True)
+                if is_ask_starter:
+                    response_text = f"Silakan! Anda bisa menanyakan informasi mengenai fasilitas hotel (seperti WiFi, kolam renang, gym), tarif kamar, kebijakan hotel, atau langsung mengetik 'booking' jika ingin memesan kamar. Apa yang ingin Anda tanyakan?"
+                else:
+                    response_text = f"Halo! Selamat datang di {hotel_name}. Silakan, ada yang bisa kami bantu hari ini? Anda bisa menanyakan info fasilitas hotel, harga kamar, atau langsung mengetik 'booking' jika ingin memesan kamar."
+                
+        elif handler:
             response_text = await handler.handle(ctx)
         else:
             response_text = fallback.get_fallback_response()

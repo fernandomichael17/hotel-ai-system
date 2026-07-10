@@ -7,6 +7,7 @@ class IntentType(str, Enum):
     Enum untuk tipe intent klasifikasi chatbot hotel.
     """
     FAQ = "faq"
+    GREETING = "greeting"
     BOOKING_INQUIRY = "booking_inquiry"
     BOOKING_REQUEST = "booking_request"
     COMPLAINT = "complaint"
