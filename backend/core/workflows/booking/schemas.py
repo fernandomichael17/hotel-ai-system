@@ -49,20 +49,16 @@ class CollectedParams(BaseModel):
 
     def missing_required(self) -> list[str]:
         """
-        Return list field yang masih
-        belum diisi tapi wajib ada.
+        Mengembalikan daftar label parameter wajib yang belum diisi oleh tamu.
 
-        Required fields:
-        - guest_name
-        - wa_number
-        - check_in_date
-        - room_type
-        - num_guests
+        Return:
+            list[str]: Daftar nama label parameter wajib yang masih kosong.
         """
         required = {
             "guest_name": "nama tamu",
             "wa_number": "nomor WhatsApp",
             "check_in_date": "tanggal check-in",
+            "check_out_date": "tanggal check-out",
             "room_type": "tipe kamar",
             "num_guests": "jumlah tamu dewasa"
         }

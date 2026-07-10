@@ -100,6 +100,47 @@ class BookingHandler:
                 "kamar, kami siap membantu! 😊"
             )
 
+        # Deteksi FAQ interrupt
+        # Kalau user tanya FAQ di tengah booking
+        # → jawab FAQ dulu, lalu remind booking
+        from backend.core.classifier.intent_classifier import IntentClassifier
+
+        classifier = IntentClassifier(self.llm)
+        result = classifier.classify(message)
+        current_intent = result.intent.value
+
+        # Kalau intent adalah faq dan state
+        # sedang collecting/confirming/upselling
+        # → handle FAQ dulu dengan reminder
+        FAQ_INTERRUPT_INTENTS = {"faq"}
+        BOOKING_ACTIVE_STEPS = {
+            BookingStep.COLLECTING,
+            BookingStep.CONFIRMING,
+            BookingStep.UPSELLING
+        }
+
+        if current_intent in FAQ_INTERRUPT_INTENTS and state.step in BOOKING_ACTIVE_STEPS:
+            # Import FAQ handler
+            from backend.core.workflows.faq.handler import FAQHandler
+            faq = FAQHandler(self.db)
+            faq_response = await faq.handle(ctx)
+
+            # Tambah reminder lanjut booking
+            missing = state.params.missing_required()
+            if missing:
+                reminder = await self.collector.generate_question(
+                    state=state,
+                    has_history=True
+                )
+                return (
+                    f"{faq_response}\n\n"
+                    f"---\n"
+                    f"Ngomong-ngomong, kita masih "
+                    f"dalam proses booking. "
+                    f"{reminder}"
+                )
+            return faq_response
+
         # Route berdasarkan step
         if state.step == BookingStep.INQUIRY:
             response = await self._handle_inquiry(ctx, state, session_mgr)
@@ -149,7 +190,10 @@ class BookingHandler:
         state.step = BookingStep.COLLECTING
         await session_mgr.save_booking_state(ctx.session_id, state)
 
-        question = await self.collector.generate_question(state, has_history=len(ctx.history) > 0)
+        question = await self.collector.generate_question(
+            state=state,
+            has_history=len(ctx.history) > 0
+        )
         return question
 
     async def _handle_collecting(
@@ -168,6 +212,24 @@ class BookingHandler:
         4. Jika parameter wajib masih ada yang kurang, minta parameter berikutnya yang kosong.
         5. Simpan state terupdate.
         """
+        # Cek jika user menolak melanjutkan booking setelah info ketersediaan
+        # (yaitu jika belum ada info personal yang terisi, dan user mengirim pesan penolakan)
+        is_negation = ctx.message.content.lower().strip() in {
+            "tidak", "gak", "ga", "no", "enggak", "nggak", "tidak mau", "batal", "cancel"
+        }
+        has_no_personal_info = (
+            state.params.guest_name is None
+            and state.params.wa_number is None
+            and state.params.num_guests is None
+        )
+        if is_negation and has_no_personal_info:
+            await session_mgr.clear_booking_state(ctx.session_id)
+            return (
+                "Baik, silakan beri tahu kami jika Anda memerlukan "
+                "informasi lain atau bantuan lainnya! 😊"
+            )
+
+        print(f"[DEBUG] _handle_collecting called. state={state.model_dump()}")
         # Extract dan merge params
         state.params = await self.collector.extract_params(
             message=ctx.message.content,
@@ -186,7 +248,10 @@ class BookingHandler:
 
         # Masih ada yang kurang → tanya
         await session_mgr.save_booking_state(ctx.session_id, state)
-        return await self.collector.generate_question(state, has_history=len(ctx.history) > 0)
+        return await self.collector.generate_question(
+            state=state,
+            has_history=len(ctx.history) > 0
+        )
 
     async def _handle_confirming(
         self,
@@ -199,34 +264,107 @@ class BookingHandler:
 
         Flow:
         1. Deteksi konfirmasi persetujuan dari pesan tamu.
-        2. Jika disetujui (ya), muat paket promosi penawaran tambahan (upsell) dari kebijakan hotel.
-        3. Jika ada paket upsell, simpan ke tawaran state dan pindah ke step UPSELLING.
-        4. Jika tidak ada paket upsell, langsung buat draf reservasi di database.
-        5. Jika ditolak (tidak), kembalikan step ke COLLECTING dan tanyakan data mana yang ingin diperbaiki.
+        2. Jika disetujui (ya), proses pemesanan dengan upsell atau langsung reservasi.
+        3. Jika ditolak (tidak), proses koreksi parameter langsung dari pesan atau tanya ulang.
         """
         confirmed = await self.collector.detect_confirmation(ctx.message.content)
 
         if confirmed:
-            # Load upsell offers dari policy
-            upsells = await self._load_upsells(ctx.hotel_id)
+            return await self._process_booking_confirmation(ctx, state, session_mgr)
 
-            if upsells:
-                state.upsell_offers = upsells
-                state.step = BookingStep.UPSELLING
-                await session_mgr.save_booking_state(ctx.session_id, state)
-                return self._build_upsell_message(state)
-            else:
-                # Tidak ada upsell → langsung create
-                return await self._create_booking(ctx, state, session_mgr)
+        return await self._process_booking_correction(ctx, state, session_mgr)
 
-        # User ingin ubah sesuatu
+    async def _process_booking_confirmation(
+        self,
+        ctx: ConversationContext,
+        state: BookingState,
+        session_mgr: SessionManager
+    ) -> str:
+        """
+        Memproses persetujuan booking tamu, memuat penawaran upsell, dan memperbarui step.
+
+        Parameter:
+            ctx (ConversationContext): Konteks percakapan saat ini.
+            state (BookingState): State booking aktif.
+            session_mgr (SessionManager): Manager sesi untuk menyimpan state.
+
+        Return:
+            str: Pesan penawaran upsell atau pesan sukses reservasi kamar.
+        """
+        upsells = await self._load_upsells(ctx.hotel_id)
+
+        if upsells:
+            state.upsell_offers = upsells
+            state.step = BookingStep.UPSELLING
+            await session_mgr.save_booking_state(ctx.session_id, state)
+            return self._build_upsell_message(state)
+        
+        return await self._create_booking(ctx, state, session_mgr)
+
+    async def _process_booking_correction(
+        self,
+        ctx: ConversationContext,
+        state: BookingState,
+        session_mgr: SessionManager
+    ) -> str:
+        """
+        Memproses penolakan atau koreksi parameter booking dari pesan tamu.
+
+        Parameter:
+            ctx (ConversationContext): Konteks percakapan saat ini.
+            state (BookingState): State booking aktif.
+            session_mgr (SessionManager): Manager sesi untuk menyimpan state.
+
+        Return:
+            str: Respon ketersediaan kamar baru, konfirmasi data baru, atau pertanyaan perbaikan data.
+        """
+        old_params = state.params.model_dump()
+        
+        # Ekstrak parameter dari pesan penolakan/koreksi tamu
+        new_params = await self.collector.extract_params(
+            message=ctx.message.content,
+            current_state=state
+        )
+        
+        # Identifikasi parameter mana saja yang berubah dan tidak null
+        changed_fields = [
+            field for field, new_val in new_params.model_dump().items()
+            if new_val != old_params.get(field) and new_val is not None
+        ]
+
+        if not changed_fields:
+            state.step = BookingStep.COLLECTING
+            await session_mgr.save_booking_state(ctx.session_id, state)
+            return (
+                "Baik, apa yang ingin diubah? "
+                "Silakan sebutkan informasi yang ingin diperbaiki."
+            )
+
+        # Update parameter baru ke state
+        state.params = new_params
+
+        # Jika parameter kritis untuk ketersediaan berubah, cek ulang availability
+        critical_fields = {"room_type", "check_in_date", "check_out_date"}
+        if any(f in changed_fields for f in critical_fields):
+            state.availability_checked = False
+            return await self._check_and_respond(ctx, state, session_mgr)
+
+        # Jika field non-kritis yang berubah (nama, nomor wa, dll)
+        if state.params.is_complete():
+            state.step = BookingStep.CONFIRMING
+            await session_mgr.save_booking_state(ctx.session_id, state)
+            return (
+                "Baik, data pemesanan telah diperbarui.\n\n"
+                f"{self._build_confirm_message(state)}"
+            )
+
         state.step = BookingStep.COLLECTING
         await session_mgr.save_booking_state(ctx.session_id, state)
-        return (
-            "Baik, apa yang ingin diubah? "
-            "Silakan sebutkan informasi yang "
-            "ingin diperbaiki."
+        question = await self.collector.generate_question(
+            state=state,
+            has_history=len(ctx.history) > 0
         )
+        return f"Baik, data pemesanan telah diperbarui. {question}"
 
     async def _handle_upselling(
         self,
@@ -270,6 +408,7 @@ class BookingHandler:
         state: BookingState,
         session_mgr: SessionManager
     ) -> str:
+        print(f"[DEBUG] _check_and_respond called. state={state.model_dump()}")
         """
         Melakukan pengecekan ketersediaan kamar ke HMS dan menyusun respon tarif.
 
@@ -341,6 +480,8 @@ class BookingHandler:
                 total_fmt = f"Rp {availability.total_price:,.0f}".replace(",", ".")
                 price_text += f"\n💳 Total: *{total_fmt}*"
 
+        was_inquiry = state.step == BookingStep.INQUIRY
+
         # Pindah ke collecting untuk parameter lain jika belum lengkap
         state.step = BookingStep.COLLECTING
         await session_mgr.save_booking_state(ctx.session_id, state)
@@ -356,8 +497,13 @@ class BookingHandler:
             state.step = BookingStep.CONFIRMING
             await session_mgr.save_booking_state(ctx.session_id, state)
             response += self._build_confirm_message(state)
+        elif was_inquiry:
+            response += "Apakah Anda ingin melanjutkan untuk melakukan pemesanan?"
         else:
-            question = await self.collector.generate_question(state, has_history=len(ctx.history) > 0)
+            question = await self.collector.generate_question(
+                state=state,
+                has_history=len(ctx.history) > 0
+            )
             response += question
 
         return response

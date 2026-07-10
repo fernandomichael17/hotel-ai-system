@@ -16,8 +16,10 @@ Sudah proven di POC:
 - Handle tanggal relatif (besok, weekend): ✅
 """
 
+import re
 import json
 import asyncio
+from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.core.workflows.booking.schemas import (
     CollectedParams, BookingState
@@ -66,9 +68,17 @@ CONTOH EKSTRAKSI JAWABAN TAMU:
    Hasil: {{"guest_name": "fernando siregar dan michael hebert"}}
 2. Pesan: "atas nama budi santoso"
    Hasil: {{"guest_name": "budi santoso"}}
-3. Pesan: "2 orang"
+3. Pesan: "fernando"
+   Hasil: {{"guest_name": "fernando"}}
+4. Pesan: "michael carrick"
+   Hasil: {{"guest_name": "michael carrick"}}
+5. Pesan: "2 orang"
    Hasil: {{"num_guests": 2}}
-4. Pesan: "081234567890"
+6. Pesan: "seorang" atau "sendiri saja" atau "cuma saya"
+   Hasil: {{"num_guests": 1}}
+7. Pesan: "berdua"
+   Hasil: {{"num_guests": 2}}
+8. Pesan: "081234567890"
    Hasil: {{"wa_number": "081234567890"}}
 
 Format output:
@@ -85,33 +95,22 @@ Format output:
 
 # Prompt untuk generate pertanyaan
 # yang natural ke user
-ASK_MISSING_PROMPT = """Kamu adalah asisten
-booking hotel yang ramah.
+ASK_MISSING_PROMPT = """Kamu adalah asisten booking hotel yang ramah.
 
 Tamu sedang dalam proses booking kamar.
 Parameter yang sudah terkumpul:
 {collected}
 
-Parameter yang masih kurang:
-{missing}
-
-Tugas: Buat SATU pertanyaan natural
-dalam Bahasa Indonesia untuk menanyakan
-parameter yang paling penting dari yang
-masih kurang.
+Parameter yang PERLU DITANYAKAN SEKARANG:
+{target}
 
 ATURAN:
-1. Tanya SATU hal saja per giliran
-2. Mulai dari yang paling penting:
-   check_in_date → room_type →
-   num_guests → guest_name → wa_number
-3. Pertanyaan singkat dan friendly
-4. Boleh tambahkan pilihan kalau relevan
-   contoh: "Tipe kamar apa yang diinginkan?
-   Standard (Rp 500rb), Deluxe (Rp 850rb),
-   atau Suite (Rp 1,5jt)?"
-5. Jangan ulangi info yang sudah disebutkan
-6. JANGAN pernah menyatakan bahwa kamar sudah disiapkan, dibooking, atau diamankan karena ini baru tahap pencatatan data awal.
+- Tanya HANYA parameter di atas
+- Satu pertanyaan singkat dan friendly
+- {no_greeting_rule}
+{target_rule}
+- DILARANG membuat asumsi status booking. Jangan katakan "kamar sudah disiapkan", "booking sedang diproses", atau kalimat sejenisnya sebelum tamu mengkonfirmasi summary. Tugasmu HANYA menanyakan parameter yang masih kurang.
+- JANGAN ulangi sapaan kalau sudah ada riwayat percakapan
 
 Pertanyaan:"""
 
@@ -121,13 +120,172 @@ class BookingFormCollector:
         """Inisialisasi form collector dengan klien LLM tunggal (Singleton)."""
         self.llm = get_llm_client()
 
+    def _extract_duration_nights(self, message: str) -> int | None:
+        """
+        Mengekstrak durasi menginap dari pesan user.
+
+        Parameter:
+            message (str): Pesan user dalam bahasa natural.
+
+        Return:
+            int | None: Jumlah malam menginap, atau None jika tidak ditemukan.
+
+        Pola yang ditangani:
+        - "semalam" → 1
+        - "sehari" → 1
+        - "2 malam" → 2
+        - "3 hari" → 3
+        - "stay 3 nights" → 3
+        - "3 hari 2 malam" → 2 (malam diprioritaskan)
+        - "satu malam" → 1
+        - "dua malam" → 2
+        """
+        msg = message.lower()
+
+        # Prioritas 1: kata durasi tanpa digit
+        if re.search(r'\bsemalam\b', msg):
+            return 1
+        if re.search(r'\bsehari\b', msg) and 'malam' not in msg:
+            return 1
+
+        # Prioritas 2: digit + malam (malam selalu diprioritaskan dari hari)
+        m = re.search(r'(\d+)\s*(?:malam|night)', msg)
+        if m:
+            return int(m.group(1))
+
+        # Prioritas 3: kata bilangan Indonesia + malam
+        indo_nums = {
+            'satu': 1, 'dua': 2, 'tiga': 3,
+            'empat': 4, 'lima': 5, 'enam': 6,
+            'tujuh': 7
+        }
+        for word, num in indo_nums.items():
+            if re.search(rf'\b{word}\s*(?:malam|night)\b', msg):
+                return num
+
+        # Prioritas 4: digit + hari/day (fallback)
+        m = re.search(r'(\d+)\s*(?:hari|day)', msg)
+        if m:
+            return int(m.group(1))
+
+        # Prioritas 5: kata bilangan Indonesia + hari
+        for word, num in indo_nums.items():
+            if re.search(rf'\b{word}\s*(?:hari|day)\b', msg):
+                return num
+
+        # Prioritas 6: pattern "selama/menginap/stay X"
+        m = re.search(r'(?:selama|menginap|stay)\s*(\d+)', msg)
+        if m:
+            return int(m.group(1))
+
+        return None
+
+    def _calculate_checkout(self, check_in_str: str, nights: int) -> str | None:
+        """
+        Menghitung tanggal check_out dari check_in dan jumlah malam.
+
+        Parameter:
+            check_in_str (str): Tanggal check-in dalam format apapun (ISO atau nama bulan Indonesia).
+            nights (int): Jumlah malam menginap.
+
+        Return:
+            str | None: Tanggal check-out dalam format yang sama dengan input, atau None jika gagal parse.
+        """
+        try:
+            # Coba parse ISO format (YYYY-MM-DD)
+            ci = datetime.strptime(check_in_str, '%Y-%m-%d')
+            co = ci + timedelta(days=nights)
+            return co.strftime('%Y-%m-%d')
+        except ValueError:
+            pass
+
+        # Fallback: coba parse format Indonesia "15 Juli" dsb.
+        try:
+            from dateutil import parser as dateparser
+            ci = dateparser.parse(check_in_str, dayfirst=True)
+            if ci is None:
+                return None
+            co = ci + timedelta(days=nights)
+            if '-' in check_in_str:
+                return co.strftime('%Y-%m-%d')
+            else:
+                months_map = {
+                    1: 'Januari', 2: 'Februari', 3: 'Maret', 4: 'April',
+                    5: 'Mei', 6: 'Juni', 7: 'Juli', 8: 'Agustus',
+                    9: 'September', 10: 'Oktober', 11: 'November', 12: 'Desember'
+                }
+                return f"{co.day} {months_map[co.month]}"
+        except Exception:
+            return None
+
+    def _get_priority_target(self, missing: list[str]) -> str:
+        """
+        Menentukan satu parameter prioritas tertinggi dari daftar parameter yang masih kurang.
+
+        Parameter:
+            missing (list[str]): Daftar label parameter yang masih kosong.
+
+        Return:
+            str: Label parameter target tunggal paling prioritas.
+        """
+        priority_fields = [
+            ("check_in_date", "tanggal check-in"),
+            ("room_type", "tipe kamar"),
+            ("num_guests", "jumlah tamu dewasa"),
+            ("guest_name", "nama tamu"),
+            ("wa_number", "nomor WhatsApp")
+        ]
+        for field, label in priority_fields:
+            if label in missing:
+                return label
+        return missing[0]
+
+    def _filter_guest_name(self, name: str | None) -> str | None:
+        """
+        Menyaring nama tamu untuk mendeteksi nama palsu atau hasil ekstraksi yang salah.
+
+        Parameter:
+            name (str | None): Nama tamu yang diekstrak.
+
+        Return:
+            str | None: Nama tamu jika valid, atau None jika terdeteksi palsu/salah.
+        """
+        if not name:
+            return name
+        name_lower = name.lower().strip()
+
+        # 1. Tolak jika mengandung digit/angka
+        has_digit = bool(re.search(r'\d', name_lower))
+
+        # 2. Tolak jika mengandung nama bulan
+        month_names = [
+            "januari", "februari", "maret", "april", "mei", "juni",
+            "juli", "agustus", "september", "oktober", "november", "desember",
+            "jan", "feb", "mar", "apr", "may", "jun", "jul", "agu", "aug",
+            "sep", "okt", "oct", "nov", "des"
+        ]
+        has_month = any(m in name_lower.split() for m in month_names)
+
+        # 3. Tolak jika mengandung kata kunci booking/detail pesanan hotel
+        forbidden_words = {
+            "booking", "reservasi", "pesan", "kamar", "room", "tipe", "standard", "deluxe", "suite",
+            "malam", "hari", "day", "night", "stay", "menginap", "selama", "sehari", "semalam",
+            "orang", "tamu", "dewasa", "anak", "seorang", "sendiri", "berdua", "bertiga",
+            "untuk", "tanggal", "tgl", "pada", "di", "ke", "dari", "bukan"
+        }
+        has_forbidden_word = any(w in forbidden_words for w in name_lower.split())
+
+        if has_digit or has_month or has_forbidden_word:
+            return None
+        return name
+
     async def extract_params(
         self,
         message: str,
         current_state: BookingState
     ) -> CollectedParams:
         """
-        Extract parameter booking dari pesan user menggunakan LLM.
+        Extract parameter booking dari pesan user menggunakan LLM + heuristik programatis.
         Merge dengan params yang sudah ada:
         - Kalau ada nilai baru → update
         - Kalau null → pertahankan yang lama
@@ -137,6 +295,8 @@ class BookingFormCollector:
         2. Jalankan panggilan generate ke LLM secara thread-safe asinkron.
         3. Bersihkan format blok markdown kode JSON pada teks jawaban LLM.
         4. Lakukan deserialisasi JSON dan gabungkan parameter dengan parameter saat ini.
+        5. Jalankan heuristik programatis sebagai safety net.
+        6. Jalankan filter defensive nama tamu.
         """
         current_params = current_state.params
 
@@ -178,60 +338,224 @@ class BookingFormCollector:
                 if value is not None and field in current_dict:
                     if field in ["check_in_date", "check_out_date"] and isinstance(value, str):
                         value = parse_indonesian_date(value)
+                    if field == "guest_name" and isinstance(value, str):
+                        value = self._filter_guest_name(value)
                     current_dict[field] = value
 
-        # Heuristik Deteksi Durasi Menginap (misal: "2 hari", "2 malam", "stay 3 days")
-        # Jika check_in_date terisi namun check_out_date kosong
-        if current_dict.get("check_in_date") and not current_dict.get("check_out_date"):
-            import re
-            from datetime import datetime, timedelta
-            msg_lower = message.lower()
-            
-            # Pola regex untuk menangkap durasi menginap
-            duration_patterns = [
-                r"(\d+)\s*(hari|malam|day|night)",
-                r"(selama|menginap|stay)\s*(\d+)"
-            ]
-            
-            duration_days = None
-            for pattern in duration_patterns:
-                match = re.search(pattern, msg_lower)
-                if match:
-                    # Ambil angka durasi
-                    if match.group(1).isdigit():
-                        duration_days = int(match.group(1))
-                    elif len(match.groups()) >= 2 and match.group(2).isdigit():
-                        duration_days = int(match.group(2))
-                    break
-            
-            if duration_days:
-                try:
-                    ci_date = datetime.strptime(current_dict["check_in_date"], "%Y-%m-%d")
-                    co_date = ci_date + timedelta(days=duration_days)
-                    current_dict["check_out_date"] = co_date.strftime("%Y-%m-%d")
-                except Exception:
-                    pass
+        # === BLOK HEURISTIK PROGRAMATIS ===
+        # Semua heuristik di bawah berfungsi sebagai safety net
+        # ketika LLM 4B gagal mengekstrak parameter dari pesan user.
+        msg_lower = message.lower().strip()
 
-        # Heuristik Tambahan (Defensive Programming):
-        # Jika check_in_date dan room_type sudah terisi, sedangkan guest_name masih kosong,
-        # dan pesan user berisi nama tanpa angka, keyword kamar, atau kata bilangan, asumsikan pesan tersebut adalah nama tamu.
+        # --- HEURISTIK 0: Deteksi & Ekstraksi Tanggal Programatis ---
+        if not extracted.get("check_in_date"):
+            h_check_in, h_check_out = self._apply_date_heuristics(message, current_params.check_in_date)
+            if h_check_in:
+                current_dict["check_in_date"] = h_check_in
+            if h_check_out:
+                current_dict["check_out_date"] = h_check_out
+
+        # --- PENYESUAIAN DYNAMIC CHECK-OUT ---
+        # Jika check-in berubah, sesuaikan check-out untuk menjaga durasi menginap (nights)
+        old_ci = current_params.check_in_date
+        new_ci = current_dict.get("check_in_date")
+        old_co = current_params.check_out_date
+        new_co = current_dict.get("check_out_date")
+
+        if old_ci and new_ci and new_ci != old_ci and (new_co == old_co or not new_co):
+            try:
+                old_ci_dt = datetime.strptime(old_ci, "%Y-%m-%d")
+                old_co_dt = datetime.strptime(old_co, "%Y-%m-%d") if old_co else None
+                if old_co_dt and old_co_dt > old_ci_dt:
+                    nights = (old_co_dt - old_ci_dt).days
+                    new_ci_dt = datetime.strptime(new_ci, "%Y-%m-%d")
+                    new_co_dt = new_ci_dt + timedelta(days=nights)
+                    current_dict["check_out_date"] = new_co_dt.strftime("%Y-%m-%d")
+                else:
+                    current_dict["check_out_date"] = None
+            except Exception:
+                current_dict["check_out_date"] = None
+
+        # Defensive check: Jika check-out <= check-in, hapus check-out agar ditanyakan kembali
+        ci_str = current_dict.get("check_in_date")
+        co_str = current_dict.get("check_out_date")
+        if ci_str and co_str:
+            try:
+                ci_dt = datetime.strptime(ci_str, "%Y-%m-%d")
+                co_dt = datetime.strptime(co_str, "%Y-%m-%d")
+                if co_dt <= ci_dt:
+                    current_dict["check_out_date"] = None
+            except Exception:
+                pass
+
+        # --- HEURISTIK 1: Deteksi Durasi Menginap & Auto-calculate Checkout ---
+        if current_dict.get("check_in_date") and not current_dict.get("check_out_date"):
+            nights = self._extract_duration_nights(message)
+            if nights and nights > 0:
+                checkout = self._calculate_checkout(
+                    current_dict["check_in_date"], nights
+                )
+                if checkout:
+                    current_dict["check_out_date"] = checkout
+
+        # --- HEURISTIK 2: Deteksi Jumlah Tamu ---
+        # Layer 2a: Kata bilangan Indonesia (termasuk solo tanpa "orang")
+        # Layer 2b: Digit dengan guard kontekstual (hindari false positive "lantai 3", "kamar 5")
+        if not current_dict.get("num_guests"):
+            # False positive prefixes — jangan ambil angka yang mengikuti kata-kata ini
+            false_positive_prefixes = [
+                'lantai', 'kamar', 'nomor', 'no',
+                'lt', 'room', 'jam', 'pukul',
+                'tanggal', 'tgl', 'hari'
+            ]
+
+            # Kata bilangan Indonesia
+            indo_num_map = {
+                r'\bsendiri\b': 1,
+                r'\bseorang\b': 1,
+                r'\bsatu orang\b': 1,
+                r'\bsatu\b': 1,
+                r'\bberdua\b': 2,
+                r'\bdua orang\b': 2,
+                r'\bdua\b': 2,
+                r'\bbertiga\b': 3,
+                r'\btiga orang\b': 3,
+                r'\btiga\b': 3,
+                r'\bberempat\b': 4,
+                r'\bempat orang\b': 4,
+                r'\bempat\b': 4,
+                r'\bberlima\b': 5,
+                r'\blima orang\b': 5,
+                r'\blima\b': 5,
+                r'\bcuma saya\b': 1,
+                r'\bhanya saya\b': 1,
+                r'\bsaya saja\b': 1,
+            }
+
+            for pattern, num in indo_num_map.items():
+                if re.search(pattern, msg_lower):
+                    current_dict["num_guests"] = num
+                    break
+
+            # 2b. Fallback digit (1-2 digit angka) dengan guard kontekstual
+            if not current_dict.get("num_guests"):
+                digits = re.finditer(r'\b(\d{1,2})\b', msg_lower)
+                for m in digits:
+                    digit_pos = m.start()
+                    before = msg_lower[:digit_pos].strip().split()
+                    last_word = before[-1] if before else ""
+                    if last_word not in false_positive_prefixes:
+                        val = int(m.group(1))
+                        if 1 <= val <= 20:
+                            current_dict["num_guests"] = val
+                            break
+
+        # --- HEURISTIK 3: Deteksi Nama Tamu dari Pola Bahasa ---
+        # Menangkap: "atas nama X", "a/n X", "nama X", "untuk X", "buat X"
+        if not current_dict.get("guest_name"):
+            noise_words = {
+                'saya', 'nya', 'ya', 'dong',
+                'deh', 'nih', 'aja', 'saja'
+            }
+            title_words = {
+                'pak', 'bapak', 'bu', 'ibu',
+                'mas', 'mbak', 'bang', 'kak',
+                'tuan', 'nyonya', 'nn', 'tn',
+                'ny', 'mr', 'mrs', 'ms', 'dr'
+            }
+
+            patterns_nama = [
+                r'(?:atas\s+nama|a[/]n)\s+([a-zA-Z\s]+)',
+                r'(?:^|\s)nama(?:\s+saya|\s+tamu)?\s*[:\-]?\s*([a-zA-Z\s]{2,40})',
+                r'(?:untuk|buat)\s+([a-zA-Z\s]{2,30})(?:\s|$)',
+            ]
+
+            # Kata kunci booking yang tidak boleh muncul di nama
+            booking_words = {
+                'untuk', 'di', 'tanggal', 'malam', 'hari', 'tamu',
+                'kamar', 'check', 'orang', 'bulan', 'tahun'
+            }
+
+            for pattern in patterns_nama:
+                m = re.search(pattern, msg_lower)
+                if m:
+                    name_raw = m.group(1).strip()
+                    name_words = [
+                        w for w in name_raw.split()
+                        if w not in noise_words and w not in title_words
+                    ]
+                    if 1 <= len(name_words) <= 5:
+                        candidate = ' '.join(name_words).title()
+                        if not any(bw in candidate.lower() for bw in booking_words):
+                            current_dict["guest_name"] = candidate
+                            break
+
+        # --- HEURISTIK 4: Nama Tamu Murni (Defensive) ---
+        # Aktif hanya jika check_in_date dan room_type sudah terisi.
+        # Menangkap pesan murni nama tanpa keyword lain.
         if (
             current_params.check_in_date and
             current_params.room_type and
             not current_dict.get("guest_name")
         ):
-            msg_clean = message.lower().strip()
-            room_keywords = ["standard", "deluxe", "suite", "kamar", "presidential", "room", "tipe"]
-            quantity_keywords = ["satu", "dua", "tiga", "empat", "lima", "orang", "tamu", "dewasa", "anak", "breakfast", "sarapan"]
-            
-            has_room_kw = any(kw in msg_clean for kw in room_keywords)
-            has_qty_kw = any(kw in msg_clean for kw in quantity_keywords)
-            has_digits = any(char.isdigit() for char in msg_clean)
-            
-            if not has_digits and not has_room_kw and not has_qty_kw and 1 <= len(message.split()) <= 6:
-                current_dict["guest_name"] = message.strip()
+            confirmation_blacklist = {
+                'ya', 'iya', 'ok', 'oke', 'okay',
+                'setuju', 'benar', 'betul', 'lanjut',
+                'fix', 'deal', 'yes', 'yep', 'boleh',
+                'silakan', 'tidak', 'tidak jadi',
+                'batal', 'cancel', 'no', 'nope',
+                'gak', 'ga', 'nggak', 'jangan'
+            }
+
+            # Skip kalau pesan adalah konfirmasi
+            if msg_lower.strip() not in confirmation_blacklist:
+                title_words_h4 = {
+                    'pak', 'bapak', 'bu', 'ibu', 'mas', 'mbak',
+                    'bang', 'kak', 'tuan', 'nyonya'
+                }
+                noise_words_h4 = {
+                    'saya', 'nya', 'ya', 'dong', 'deh', 'nih', 'aja', 'saja'
+                }
+                booking_keywords = {
+                    'kamar', 'standard', 'deluxe', 'suite', 'tanggal', 'check',
+                    'malam', 'hari', 'untuk', 'booking', 'pesan', 'reservasi',
+                    'tipe', 'harga', 'berapa', 'orang', 'tamu',
+                    'januari', 'februari', 'maret', 'april', 'mei', 'juni',
+                    'juli', 'agustus', 'september', 'oktober', 'november', 'desember',
+                    'january', 'february', 'march', 'april', 'may', 'june',
+                    'july', 'august', 'september', 'october', 'november', 'december'
+                }
+                month_words = {
+                    'januari', 'februari', 'maret', 'april', 'mei', 'juni',
+                    'juli', 'agustus', 'september', 'oktober', 'november', 'desember'
+                }
+
+                words = msg_lower.split()
+                clean_words = [
+                    w for w in words
+                    if w not in title_words_h4 and w not in noise_words_h4
+                ]
+
+                if (
+                    1 <= len(clean_words) <= 5
+                    and not any(w in booking_keywords for w in clean_words)
+                    and not re.search(r'\d', msg_lower)
+                    and all(re.match(r'^[a-zA-Z]+$', w) for w in clean_words)
+                    and any(len(w) >= 2 for w in clean_words)
+                    and msg_lower.strip() not in confirmation_blacklist
+                ):
+                    final_words = [
+                        w for w in clean_words if w not in month_words
+                    ]
+                    if final_words:
+                        current_dict["guest_name"] = ' '.join(final_words).title()
+
+        # --- FILTER DEFENSIVE NAMA TAMU ---
+        if current_dict.get("guest_name"):
+            current_dict["guest_name"] = self._filter_guest_name(current_dict["guest_name"])
 
         return CollectedParams(**current_dict)
+
 
     async def generate_question(
         self,
@@ -241,45 +565,65 @@ class BookingFormCollector:
         """
         Generate pertanyaan natural menggunakan LLM untuk parameter yang masih kurang.
 
+        Parameter:
+            state (BookingState): State booking saat ini.
+            has_history (bool): True jika sudah ada riwayat percakapan sebelumnya.
+
+        Return:
+            str: Pertanyaan ramah dalam Bahasa Indonesia untuk parameter target.
+
         Prioritas pertanyaan:
         1. check_in_date (paling penting)
         2. room_type
         3. num_guests
         4. guest_name
         5. wa_number
-
-        Flow:
-        1. Ambil daftar parameter yang wajib tapi kosong.
-        2. Susun ringkasan parameter yang sudah terkumpul.
-        3. Panggil generate LLM asinkron untuk menyusun pertanyaan friendly dalam Bahasa Indonesia.
         """
         missing = state.params.missing_required()
 
         if not missing:
             return ""
 
+        # Cari target parameter yang paling prioritas dari daftar yang masih kurang
+        target_param = self._get_priority_target(missing)
+
+        # Susun ringkasan parameter yang sudah terkumpul
         collected_summary = []
         params = state.params
         if params.check_in_date:
             collected_summary.append(f"Check-in: {params.check_in_date}")
+        if params.check_out_date:
+            collected_summary.append(f"Check-out: {params.check_out_date}")
         if params.room_type:
             collected_summary.append(f"Kamar: {params.room_type}")
         if params.num_guests:
-            collected_summary.append(f"Tamu: {params.num_guests} orang")
+            collected_summary.append(f"Tamu dewasa: {params.num_guests} orang")
+        if params.guest_name:
+            collected_summary.append(f"Nama tamu: {params.guest_name}")
+        if params.wa_number:
+            collected_summary.append(f"WhatsApp: {params.wa_number}")
 
-        prompt_body = ASK_MISSING_PROMPT.format(
+        # Atur no_greeting_rule berdasarkan riwayat percakapan
+        if has_history:
+            no_greeting_rule = "JANGAN mulai dengan sapaan (Halo/Hi/dll)"
+        else:
+            no_greeting_rule = "Boleh mulai dengan sapaan singkat"
+
+        target_rule = ""
+        if target_param == "tipe kamar":
+            target_rule = "- Sebutkan pilihan tipe kamar dan harganya (Standard Rp500rb, Deluxe Rp850rb, Suite Rp1,5jt) agar tamu bisa memilih."
+        elif target_param == "jumlah tamu dewasa":
+            target_rule = "- Tanya BERAPA ORANG (angka) dewasa yang akan menginap. Jangan tanya nama mereka."
+        elif target_param == "nama tamu":
+            target_rule = "- Tanya NAMA LENGKAP tamu yang akan menginap untuk keperluan registrasi."
+        elif target_param == "tanggal check-out":
+            target_rule = "- Tanya tanggal check-out atau berapa malam (durasi menginap) tamu akan menginap."
+
+        prompt = ASK_MISSING_PROMPT.format(
             collected=", ".join(collected_summary) if collected_summary else "Belum ada",
-            missing=", ".join(missing)
-        )
-
-        # Tambahkan instruksi untuk tidak menyapa lagi jika sudah ada parameter terkumpul atau ada histori percakapan sebelumnya
-        no_greeting = ""
-        if collected_summary or has_history:
-            no_greeting = "JANGAN menyapa user dengan 'Halo', 'Hi', 'Selamat pagi/siang/malam', atau mengucapkan salam pembuka lagi karena ini adalah kelanjutan percakapan. Langsung tanyakan parameter yang kurang secara sopan dan natural.\n"
-
-        prompt = (
-            f"Instruksi Asisten:\nKamu asisten hotel yang ramah. Jawab singkat dan natural. JANGAN pernah menyatakan bahwa kamar sudah disiapkan atau dibooking.\n{no_greeting}\n"
-            f"{prompt_body}"
+            target=target_param,
+            no_greeting_rule=no_greeting_rule,
+            target_rule=target_rule
         )
 
         try:
@@ -287,15 +631,147 @@ class BookingFormCollector:
             return question.strip()
         except Exception:
             # Fallback pertanyaan default sederhana jika LLM gagal
-            first_missing = missing[0]
             fallback_questions = {
                 "nama tamu": "Bisa tolong sebutkan atas nama siapa booking kamar ini?",
                 "nomor WhatsApp": "Berapa nomor WhatsApp yang bisa kami hubungi?",
                 "tanggal check-in": "Untuk tanggal berapa rencana check-in Anda?",
+                "tanggal check-out": "Untuk berapa malam Anda berencana menginap?",
                 "tipe kamar": "Tipe kamar apa yang Anda inginkan (Standard, Deluxe, atau Suite)?",
                 "jumlah tamu dewasa": "Untuk berapa orang tamu yang akan menginap?"
             }
-            return fallback_questions.get(first_missing, f"Bisa infokan kembali mengenai {first_missing}?")
+            return fallback_questions.get(target_param, f"Bisa infokan kembali mengenai {target_param}?")
+
+    def _extract_dates_programmatic(self, message: str) -> list[tuple[int, str]]:
+        """
+        Mengekstrak seluruh kemunculan tanggal (relatif, spesifik, atau hari saja) 
+        dari pesan teks pengguna secara programatis beserta indeks posisinya.
+
+        Parameter:
+            message (str): Pesan teks dari pengguna.
+
+        Return:
+            list[tuple[int, str]]: Daftar tuple berisi (indeks_awal, string_tanggal_YYYY-MM-DD).
+        """
+        from datetime import date, datetime, timedelta
+        today = date.today()
+        msg_lower = message.lower().strip()
+        date_occurrences = []
+
+        # 1. Deteksi format hari + nama bulan (misal "20 juli", "8 agustus")
+        months_map = {
+            "jan": 1, "januari": 1, "january": 1,
+            "peb": 2, "pebruari": 2, "feb": 2, "februari": 2, "february": 2,
+            "mar": 3, "maret": 3, "march": 3,
+            "apr": 4, "april": 4,
+            "mei": 5, "may": 5,
+            "jun": 6, "juni": 6, "june": 6,
+            "jul": 7, "juli": 7, "july": 7,
+            "agu": 8, "agustus": 8, "aug": 8, "august": 8,
+            "sep": 9, "september": 9,
+            "okt": 10, "oktober": 10, "oct": 10, "october": 10,
+            "nop": 11, "nopember": 11, "nov": 11, "november": 11,
+            "des": 12, "desember": 12, "dec": 12, "december": 12
+        }
+
+        pattern = (
+            r'\b(\d{1,2})\s*(?:-|/|\s)\s*'
+            r'(januari|februari|maret|april|mei|juni|juli|agustus|'
+            r'september|oktober|november|desember|jan|feb|mar|apr|'
+            r'may|jun|jul|agu|aug|sep|okt|oct|nov|des)\b(?:\s*(\d{2,4}))?'
+        )
+        matches = list(re.finditer(pattern, msg_lower))
+
+        for m in matches:
+            day = int(m.group(1))
+            month = months_map[m.group(2)]
+            year = today.year
+            if m.group(3):
+                y_val = int(m.group(3))
+                year = 2000 + y_val if y_val < 100 else y_val
+            try:
+                d_str = datetime(year, month, day).strftime("%Y-%m-%d")
+                date_occurrences.append((m.start(), d_str))
+            except ValueError:
+                pass
+
+        # 2. Deteksi format relatif (hari ini, besok, lusa)
+        rel_patterns = [("hari ini", 0), ("besok", 1), ("lusa", 2)]
+        for pat, days in rel_patterns:
+            idx = msg_lower.find(pat)
+            if idx != -1:
+                d_str = (today + timedelta(days=days)).strftime("%Y-%m-%d")
+                date_occurrences.append((idx, d_str))
+
+        # 3. Deteksi format angka hari saja (misal "tanggal 20")
+        day_only_matches = re.finditer(r'\b(?:tanggal|tgl)\s*(\d{1,2})\b', msg_lower)
+        for m in day_only_matches:
+            # Lewati jika tumpang tindih dengan pencocokan hari + bulan
+            overlap = any(dm.start() <= m.start() <= dm.end() for dm in matches)
+            if overlap:
+                continue
+            day_val = int(m.group(1))
+            if 1 <= day_val <= 31:
+                target_month = today.month if day_val >= today.day else today.month + 1
+                target_year = today.year
+                if target_month > 12:
+                    target_month = 1
+                    target_year += 1
+                try:
+                    d_str = datetime(target_year, target_month, day_val).strftime("%Y-%m-%d")
+                    date_occurrences.append((m.start(), d_str))
+                except ValueError:
+                    pass
+
+        date_occurrences.sort(key=lambda x: x[0])
+        return date_occurrences
+
+    def _apply_date_heuristics(
+        self,
+        message: str,
+        current_check_in: str | None
+    ) -> tuple[str | None, str | None]:
+        """
+        Menentukan tanggal check-in dan check-out baru berdasarkan daftar kemunculan 
+        tanggal dan riwayat tanggal check-in aktif.
+
+        Parameter:
+            message (str): Pesan teks pengguna.
+            current_check_in (str | None): Tanggal check-in yang tersimpan di state saat ini.
+
+        Return:
+            tuple[str | None, str | None]: Tuple berisi (tanggal_check_in, tanggal_check_out).
+        """
+        occurrences = self._extract_dates_programmatic(message)
+        if not occurrences:
+            return None, None
+
+        msg_lower = message.lower()
+        bukan_idx = msg_lower.find("bukan")
+
+        # Jika ada kata "bukan", prioritaskan tanggal sebelum kata "bukan"
+        if bukan_idx != -1:
+            valid_occurrences = [occ for occ in occurrences if occ[0] < bukan_idx]
+            if not valid_occurrences and current_check_in:
+                valid_occurrences = [occ for occ in occurrences if occ[1] != current_check_in]
+        else:
+            valid_occurrences = occurrences
+
+        unique_dates = []
+        for occ in valid_occurrences:
+            if occ[1] not in unique_dates:
+                unique_dates.append(occ[1])
+
+        if not unique_dates:
+            return None, None
+
+        # Deteksi rentang tanggal check-in sampai check-out
+        range_indicators = ["sampai", "sd", "s/d", "hingga", "–", "-"]
+        has_range = any(ind in msg_lower for ind in range_indicators)
+
+        if len(unique_dates) >= 2 and has_range:
+            return unique_dates[0], unique_dates[1]
+
+        return unique_dates[0], None
 
     async def detect_cancellation(
         self,
@@ -303,22 +779,33 @@ class BookingFormCollector:
     ) -> bool:
         """
         Mendeteksi apakah pengguna ingin membatalkan proses booking berdasarkan kata kunci pembatalan.
+        Menggunakan regex word boundary (\\b) untuk menghindari false-positive substring.
 
-        Flow:
-        1. Normalisasi teks pesan ke huruf kecil.
-        2. Periksa apakah ada kata kunci pembatalan yang terkandung di dalam pesan.
+        Parameter:
+            message (str): Pesan pengguna.
+
+        Return:
+            bool: True jika pesan terdeteksi sebagai pembatalan.
         """
         cancel_keywords = [
             "batal", "cancel", "tidak jadi",
             "gak jadi", "ga jadi", "nvm",
             "nevermind", "udah gausah",
-            "sudah tidak perlu"
+            "sudah tidak perlu", "tidak usah"
         ]
-        msg_lower = message.lower()
-        return any(
-            kw in msg_lower
-            for kw in cancel_keywords
-        )
+        msg_lower = message.lower().strip()
+
+        # Exact match dulu
+        if msg_lower in cancel_keywords:
+            return True
+
+        # Word boundary match
+        for kw in cancel_keywords:
+            pattern = r'\b' + re.escape(kw) + r'\b'
+            if re.search(pattern, msg_lower):
+                return True
+
+        return False
 
     async def detect_confirmation(
         self,
@@ -326,14 +813,17 @@ class BookingFormCollector:
     ) -> bool:
         """
         Mendeteksi apakah user mengonfirmasi persetujuan atas draf atau penawaran upsell.
+        Menggunakan regex word boundary (\\b) untuk menghindari false-positive
+        seperti "saya" terdeteksi sebagai "ya".
 
-        Flow:
-        1. Normalisasi dan bersihkan spasi pesan.
-        2. Lakukan pencocokan eksak pada kata kunci persetujuan singkat.
-        3. Jika tidak cocok eksak, lakukan pemeriksaan substring untuk teks yang lebih panjang.
+        Parameter:
+            message (str): Pesan pengguna.
+
+        Return:
+            bool: True jika pesan terdeteksi sebagai konfirmasi.
         """
         confirm_keywords = [
-            "ya", "iya", "ok", "oke",
+            "ya", "iya", "ok", "oke", "okay",
             "setuju", "benar", "betul",
             "lanjut", "fix", "deal",
             "confirmed", "yes", "yep",
@@ -341,15 +831,78 @@ class BookingFormCollector:
         ]
         msg_lower = message.lower().strip()
 
-        # Cek exact match dulu (untuk jawaban singkat "ya", "ok")
+        # Exact match dulu
         if msg_lower in confirm_keywords:
             return True
 
-        # Cek substring untuk jawaban panjang
-        return any(
-            kw in msg_lower
-            for kw in confirm_keywords
-        )
+        # Word boundary match
+        for kw in confirm_keywords:
+            pattern = r'\b' + re.escape(kw) + r'\b'
+            if re.search(pattern, msg_lower):
+                return True
+
+        return False
+
+
+def _parse_day_only(date_str: str) -> str | None:
+    """
+    Mengonversi string yang berisi angka hari saja (tanpa bulan) menjadi format YYYY-MM-DD.
+
+    Parameter:
+        date_str (str): Input string dari pengguna.
+
+    Return:
+        str | None: String tanggal format YYYY-MM-DD, atau None jika gagal.
+    """
+    from datetime import date
+    msg_lower = date_str.lower().strip()
+    today = date.today()
+
+    day_match = re.search(r'\b(\d{1,2})\b', msg_lower)
+    if not day_match:
+        return None
+
+    months = {
+        "jan": 1, "januari": 1, "january": 1,
+        "peb": 2, "pebruari": 2, "feb": 2, "februari": 2, "february": 2,
+        "mar": 3, "maret": 3, "march": 3,
+        "apr": 4, "april": 4,
+        "mei": 5, "may": 5,
+        "jun": 6, "juni": 6, "june": 6,
+        "jul": 7, "juli": 7, "july": 7,
+        "agu": 8, "agustus": 8, "aug": 8, "august": 8,
+        "sep": 9, "september": 9,
+        "okt": 10, "oktober": 10, "oct": 10, "october": 10,
+        "nop": 11, "nopember": 11, "nov": 11, "november": 11,
+        "des": 12, "desember": 12, "dec": 12, "december": 12
+    }
+
+    # Pastikan tidak ada nama bulan di msg_lower
+    has_month_name = False
+    for m_name in months.keys():
+        if m_name in msg_lower:
+            has_month_name = True
+            break
+
+    if has_month_name:
+        return None
+
+    day_val = int(day_match.group(1))
+    if 1 <= day_val <= 31:
+        if day_val >= today.day:
+            target_month = today.month
+            target_year = today.year
+        else:
+            target_month = today.month + 1
+            target_year = today.year
+            if target_month > 12:
+                target_month = 1
+                target_year += 1
+        try:
+            return datetime(target_year, target_month, day_val).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+    return None
 
 
 def parse_indonesian_date(date_str: str) -> str:
@@ -357,16 +910,26 @@ def parse_indonesian_date(date_str: str) -> str:
     Menormalkan string tanggal Indonesia ke format YYYY-MM-DD berbasis tahun berjalan (2026).
     Misal: "15 agustus" -> "2026-08-15"
            "besok" -> (tanggal besok)
+
+    Parameter:
+        date_str (str): String tanggal dalam bahasa Indonesia atau format umum.
+
+    Return:
+        str: Tanggal dalam format YYYY-MM-DD, atau string asli jika gagal parse.
     """
     if not date_str:
         return date_str
-        
+
+    # JIKA sudah format ISO YYYY-MM-DD, langsung kembalikan agar tidak bergeser
     import re
-    from datetime import datetime, date, timedelta
-    
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", date_str.strip()):
+        return date_str.strip()
+
+    from datetime import date
+
     msg_lower = date_str.lower().strip()
     today = date.today()
-    
+
     # 1. Handle relatif sederhana
     if "hari ini" in msg_lower:
         return today.strftime("%Y-%m-%d")
@@ -374,7 +937,7 @@ def parse_indonesian_date(date_str: str) -> str:
         return (today + timedelta(days=1)).strftime("%Y-%m-%d")
     if "lusa" in msg_lower:
         return (today + timedelta(days=2)).strftime("%Y-%m-%d")
-        
+
     # 2. Deteksi format angka murni "DD-MM" atau "DD/MM"
     match = re.match(r"^(\d{1,2})[-/](\d{1,2})[-/]?(\d{2,4})?$", msg_lower)
     if match:
@@ -387,7 +950,12 @@ def parse_indonesian_date(date_str: str) -> str:
             return datetime(year, month, day).strftime("%Y-%m-%d")
         except ValueError:
             pass
-            
+
+    # 2b. Deteksi hari saja (misal "20" or "tanggal 20")
+    parsed_day_only = _parse_day_only(date_str)
+    if parsed_day_only:
+        return parsed_day_only
+
     # 3. Deteksi format teks bulan "15 agustus", "15 agustus 2026"
     months = {
         "jan": 1, "januari": 1, "january": 1,
@@ -403,13 +971,13 @@ def parse_indonesian_date(date_str: str) -> str:
         "nop": 11, "nopember": 11, "nov": 11, "november": 11,
         "des": 12, "desember": 12, "dec": 12, "december": 12
     }
-    
+
     # Cari angka (tanggal) dan nama bulan
     words = re.findall(r"\w+", msg_lower)
     day = None
     month = None
     year = today.year
-    
+
     for word in words:
         if word.isdigit():
             val = int(word)
@@ -419,11 +987,11 @@ def parse_indonesian_date(date_str: str) -> str:
                 day = val
         elif word in months:
             month = months[word]
-            
+
     if day and month:
         try:
             return datetime(year, month, day).strftime("%Y-%m-%d")
         except ValueError:
             pass
-            
+
     return date_str
