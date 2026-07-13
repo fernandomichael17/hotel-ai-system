@@ -69,6 +69,96 @@ class BookingHandler:
         self.policy_repo = PolicyRepository(db)
         self.llm = get_llm_client()
 
+    LOCALIZED_STRINGS = {
+        "id": {
+            "cancel_confirm": "Baik, proses booking dibatalkan. Jika sewaktu-waktu ingin memesan kamar, kami siap membantu! 😊",
+            "confirm_header": "Berikut ringkasan pesanan Anda:\n\n",
+            "confirm_footer": "\n\nApakah sudah sesuai? Ketik *ya* untuk lanjut atau *tidak* jika ingin mengubah.",
+            "correction_prompt": "Baik, apa yang ingin diubah? Silakan sebutkan informasi yang ingin diperbaiki.",
+            "correction_success_confirm": "Baik, data pemesanan telah diperbarui.\n\n",
+            "correction_success_collecting": "Baik, data pemesanan telah diperbarui. ",
+            "upsell_header": "Sebelum melanjutkan, kami memiliki beberapa penawaran menarik:\n\n",
+            "upsell_footer": "\n\nApakah Anda tertarik? Ketik *ya* untuk menerima atau *tidak* untuk melewati.",
+            "room_available": "Kamar *{room_type}* tersedia untuk tanggal *{check_in}*! ✅",
+            "price_per_night": "\n💰 Harga: *{price}/malam*",
+            "price_total": "\n💳 Total: *{price}*",
+            "continue_booking_q": "Apakah Anda ingin melanjutkan untuk melakukan pemesanan?",
+            "faq_interrupt_reminder": "Ngomong-ngomong, kita masih dalam proses booking. ",
+            "decline_continue": "Baik, silakan beri tahu kami jika Anda memerlukan informasi lain atau bantuan lainnya! 😊",
+            "room_unavailable": "Maaf, kamar *{room_type}* tidak tersedia untuk tanggal *{check_in}*.",
+            "alternatives_text": "\n\nAlternatif yang tersedia: *{alts}*\nMau coba tipe kamar lain?",
+            "booking_success": "✅ Pesanan Anda sudah kami catat!\n\nNomor referensi: *{booking_ref}*\n\nTim kami akan menghubungi Anda di nomor ini dalam *1x24 jam* untuk konfirmasi dan informasi pembayaran.\n\nAda yang ingin ditanyakan lagi?"
+        },
+        "en": {
+            "cancel_confirm": "Alright, the booking process has been cancelled. If you would like to book a room in the future, we are ready to help! 😊",
+            "confirm_header": "Here is a summary of your booking:\n\n",
+            "confirm_footer": "\n\nIs everything correct? Type *yes* to proceed or *no* if you want to change something.",
+            "correction_prompt": "Alright, what would you like to change? Please specify the information you want to correct.",
+            "correction_success_confirm": "Alright, your booking details have been updated.\n\n",
+            "correction_success_collecting": "Alright, your booking details have been updated. ",
+            "upsell_header": "Before we proceed, we have some attractive offers for you:\n\n",
+            "upsell_footer": "\n\nAre you interested? Type *yes* to accept or *no* to skip.",
+            "room_available": "Room *{room_type}* is available for *{check_in}*! ✅",
+            "price_per_night": "\n💰 Price: *{price}/night*",
+            "price_total": "\n💳 Total: *{price}*",
+            "continue_booking_q": "Would you like to proceed with the booking?",
+            "faq_interrupt_reminder": "By the way, we are still in the process of booking. ",
+            "decline_continue": "Alright, please let us know if you need any other information or assistance! 😊",
+            "room_unavailable": "Sorry, room *{room_type}* is not available for *{check_in}*.",
+            "alternatives_text": "\n\nAvailable alternatives: *{alts}*\nWould you like to try another room type?",
+            "booking_success": "✅ Your booking has been recorded!\n\nReference number: *{booking_ref}*\n\nOur team will contact you at this number within *24 hours* for confirmation and payment details.\n\nIs there anything else I can help you with?"
+        }
+    }
+
+    def _get_string(self, key: str, lang: str) -> str:
+        """
+        Mengambil string lokalisasi yang sesuai dengan kode bahasa.
+
+        Parameter:
+            key (str): Kunci string lokalisasi yang dicari.
+            lang (str): Kode bahasa ("id" atau "en").
+
+        Return:
+            str: Teks terjemahan yang sesuai.
+        """
+        return self.LOCALIZED_STRINGS.get(lang, self.LOCALIZED_STRINGS["id"]).get(key, "")
+
+    def _detect_language(self, message: str, current_lang: str) -> str:
+        """
+        Mendeteksi bahasa pesan pengguna berdasarkan kecocokan kata kunci bahasa Inggris atau Indonesia.
+
+        Parameter:
+            message (str): Pesan teks pengguna.
+            current_lang (str): Kode bahasa sesi aktif saat ini.
+
+        Return:
+            str: Kode bahasa yang terdeteksi ("id" atau "en").
+        """
+        import re
+        msg_lower = message.lower().strip()
+        
+        en_keywords = {
+            "book", "booking", "room", "checkin", "checkout", "night", "nights", "stay", "day", "days",
+            "standard", "deluxe", "suite", "hello", "hi", "yes", "no", "want", "please", "correct",
+            "wrong", "cancel", "change", "date", "guest", "guests", "adult", "adults", "child", "children"
+        }
+        id_keywords = {
+            "pesan", "booking", "kamar", "checkin", "checkout", "malam", "hari", "inap",
+            "standard", "deluxe", "suite", "halo", "hi", "ya", "tidak", "ga", "gak", "mau", "tolong",
+            "benar", "salah", "batal", "ganti", "tanggal", "tgl", "tamu", "dewasa", "anak", "orang"
+        }
+        
+        words = re.findall(r'\b\w+\b', msg_lower)
+        en_matches = sum(1 for w in words if w in en_keywords)
+        id_matches = sum(1 for w in words if w in id_keywords)
+        
+        if en_matches > id_matches:
+            return "en"
+        elif id_matches > en_matches:
+            return "id"
+            
+        return current_lang
+
     async def handle(
         self,
         ctx: ConversationContext
@@ -91,14 +181,13 @@ class BookingHandler:
 
         message = ctx.message.content
 
+        # Deteksi bahasa pesan dan simpan di state
+        state.language = self._detect_language(message, state.language)
+
         # Detect cancellation di semua step
         if await self.collector.detect_cancellation(message):
             await session_mgr.clear_booking_state(ctx.session_id)
-            return (
-                "Baik, proses booking dibatalkan. "
-                "Jika sewaktu-waktu ingin memesan "
-                "kamar, kami siap membantu! 😊"
-            )
+            return self._get_string("cancel_confirm", state.language)
 
         # Deteksi FAQ interrupt
         # Kalau user tanya FAQ di tengah booking
@@ -132,11 +221,11 @@ class BookingHandler:
                     state=state,
                     has_history=True
                 )
+                faq_reminder = self._get_string("faq_interrupt_reminder", state.language)
                 return (
                     f"{faq_response}\n\n"
                     f"---\n"
-                    f"Ngomong-ngomong, kita masih "
-                    f"dalam proses booking. "
+                    f"{faq_reminder}"
                     f"{reminder}"
                 )
             return faq_response
@@ -224,10 +313,7 @@ class BookingHandler:
         )
         if is_negation and has_no_personal_info:
             await session_mgr.clear_booking_state(ctx.session_id)
-            return (
-                "Baik, silakan beri tahu kami jika Anda memerlukan "
-                "informasi lain atau bantuan lainnya! 😊"
-            )
+            return self._get_string("decline_continue", state.language)
 
         print(f"[DEBUG] _handle_collecting called. state={state.model_dump()}")
         # Extract dan merge params
@@ -335,10 +421,7 @@ class BookingHandler:
         if not changed_fields:
             state.step = BookingStep.COLLECTING
             await session_mgr.save_booking_state(ctx.session_id, state)
-            return (
-                "Baik, apa yang ingin diubah? "
-                "Silakan sebutkan informasi yang ingin diperbaiki."
-            )
+            return self._get_string("correction_prompt", state.language)
 
         # Update parameter baru ke state
         state.params = new_params
@@ -353,8 +436,9 @@ class BookingHandler:
         if state.params.is_complete():
             state.step = BookingStep.CONFIRMING
             await session_mgr.save_booking_state(ctx.session_id, state)
+            corr_success = self._get_string("correction_success_confirm", state.language)
             return (
-                "Baik, data pemesanan telah diperbarui.\n\n"
+                f"{corr_success}"
                 f"{self._build_confirm_message(state)}"
             )
 
@@ -364,7 +448,8 @@ class BookingHandler:
             state=state,
             has_history=len(ctx.history) > 0
         )
-        return f"Baik, data pemesanan telah diperbarui. {question}"
+        corr_success = self._get_string("correction_success_collecting", state.language)
+        return f"{corr_success}{question}"
 
     async def _handle_upselling(
         self,
@@ -448,6 +533,7 @@ class BookingHandler:
             "alternatives": availability.alternatives
         }
 
+        lang = state.language
         if not availability.available:
             # Kamar tidak tersedia
             state.step = BookingStep.COLLECTING
@@ -456,29 +542,26 @@ class BookingHandler:
             alt_text = ""
             if availability.alternatives:
                 alts = ", ".join(availability.alternatives)
-                alt_text = (
-                    f"\n\nAlternatif yang tersedia: "
-                    f"*{alts}*\n"
-                    f"Mau coba tipe kamar lain?"
-                )
+                alt_tpl = self._get_string("alternatives_text", lang)
+                alt_text = alt_tpl.format(alts=alts)
 
-            return (
-                f"Maaf, kamar "
-                f"*{state.params.room_type}* "
-                f"tidak tersedia untuk tanggal "
-                f"*{state.params.check_in_date}*."
-                f"{alt_text}"
-            )
+            room_unavail_tpl = self._get_string("room_unavailable", lang)
+            return room_unavail_tpl.format(
+                room_type=state.params.room_type,
+                check_in=state.params.check_in_date
+            ) + alt_text
 
         # Kamar tersedia
         price_text = ""
         if availability.price_per_night:
             price_fmt = f"Rp {availability.price_per_night:,.0f}".replace(",", ".")
-            price_text = f"\n💰 Harga: *{price_fmt}/malam*"
+            price_tpl = self._get_string("price_per_night", lang)
+            price_text = price_tpl.format(price=price_fmt)
 
             if availability.total_price and state.params.check_out_date:
                 total_fmt = f"Rp {availability.total_price:,.0f}".replace(",", ".")
-                price_text += f"\n💳 Total: *{total_fmt}*"
+                total_tpl = self._get_string("price_total", lang)
+                price_text += total_tpl.format(price=total_fmt)
 
         was_inquiry = state.step == BookingStep.INQUIRY
 
@@ -486,19 +569,18 @@ class BookingHandler:
         state.step = BookingStep.COLLECTING
         await session_mgr.save_booking_state(ctx.session_id, state)
 
-        response = (
-            f"Kamar *{state.params.room_type}* "
-            f"tersedia untuk tanggal "
-            f"*{state.params.check_in_date}*! ✅"
-            f"{price_text}\n\n"
-        )
+        avail_tpl = self._get_string("room_available", lang)
+        response = avail_tpl.format(
+            room_type=state.params.room_type,
+            check_in=state.params.check_in_date
+        ) + f"{price_text}\n\n"
 
         if state.params.is_complete():
             state.step = BookingStep.CONFIRMING
             await session_mgr.save_booking_state(ctx.session_id, state)
             response += self._build_confirm_message(state)
         elif was_inquiry:
-            response += "Apakah Anda ingin melanjutkan untuk melakukan pemesanan?"
+            response += self._get_string("continue_booking_q", lang)
         else:
             question = await self.collector.generate_question(
                 state=state,
@@ -595,7 +677,7 @@ class BookingHandler:
 
         logger.info(f"BOOKING NOTIFICATION:\n{notif_text}")
 
-        return BOOKING_SUCCESS.format(
+        return self._get_string("booking_success", state.language).format(
             booking_ref=booking_ref
         )
 
@@ -604,14 +686,10 @@ class BookingHandler:
         state: BookingState
     ) -> str:
         """Menyusun teks ringkasan data pemesanan untuk konfirmasi tamu."""
-        summary = state.params.to_summary()
-        return (
-            f"Berikut ringkasan pesanan Anda:\n\n"
-            f"{summary}\n\n"
-            f"Apakah sudah sesuai? "
-            f"Ketik *ya* untuk lanjut atau "
-            f"*tidak* jika ingin mengubah."
-        )
+        summary = state.params.to_summary(lang=state.language)
+        header = self._get_string("confirm_header", state.language)
+        footer = self._get_string("confirm_footer", state.language)
+        return f"{header}{summary}{footer}"
 
     def _build_upsell_message(
         self,
@@ -622,12 +700,10 @@ class BookingHandler:
         if not current:
             return ""
 
-        return (
-            f"Satu lagi — apakah Anda ingin "
-            f"menambahkan:\n\n"
-            f"✨ *{current.format_offer()}*\n\n"
-            f"Ketik *ya* atau *tidak*"
-        )
+        header = self._get_string("upsell_header", state.language)
+        footer = self._get_string("upsell_footer", state.language)
+        offer_text = current.format_offer()
+        return f"{header}✨ *{offer_text}*\n\n{footer}"
 
     async def _load_upsells(
         self,

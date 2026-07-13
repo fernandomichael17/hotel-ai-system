@@ -71,63 +71,85 @@ class CollectedParams(BaseModel):
     def is_complete(self) -> bool:
         return len(self.missing_required()) == 0
 
-    def to_summary(self) -> str:
+    def to_summary(self, lang: str = "id") -> str:
         """
-        Format params sebagai summary
-        yang ditampilkan ke user
-        sebelum konfirmasi.
+        Memformat parameter data booking sebagai teks ringkasan untuk ditampilkan ke tamu.
 
-        Format output:
-        🏨 Tipe Kamar  : Deluxe
-        📅 Check-in    : 15 Juli
-        📅 Check-out   : 17 Juli
-        👥 Tamu Dewasa : 2 orang
-        👶 Anak-anak   : 1 orang
-        📝 Request     : Kamar lantai atas
-        📞 WhatsApp    : 08123456789
-        👤 Nama        : Budi Santoso
+        Parameter:
+            lang (str): Kode bahasa lokalisasi ("id" atau "en"). Default "id".
+
+        Return:
+            str: Teks ringkasan data booking terformat.
         """
-        lines = []
         room_map = {
             "standard": "Standard",
             "deluxe": "Deluxe",
             "suite": "Suite",
-            "presidential_suite":
-                "Presidential Suite"
+            "presidential_suite": "Presidential Suite"
         }
+        
+        # Lokalisasi label field
+        labels = {
+            "id": {
+                "room_type": "Tipe Kamar",
+                "check_in": "Check-in",
+                "check_out": "Check-out",
+                "guests": "Tamu Dewasa",
+                "children": "Anak-anak",
+                "request": "Request",
+                "whatsapp": "WhatsApp",
+                "name": "Nama",
+                "people": "orang"
+            },
+            "en": {
+                "room_type": "Room Type",
+                "check_in": "Check-in",
+                "check_out": "Check-out",
+                "guests": "Adult Guests",
+                "children": "Children",
+                "request": "Request",
+                "whatsapp": "WhatsApp",
+                "name": "Name",
+                "people": "people"
+            }
+        }
+        
+        l = labels.get(lang, labels["id"])
+        lines = []
+        
         lines.append(
-            f"🏨 Tipe Kamar  : "
+            f"🏨 {l['room_type']}  : "
             f"{room_map.get(self.room_type, self.room_type)}"
         )
         lines.append(
-            f"📅 Check-in    : "
+            f"📅 {l['check_in']}    : "
             f"{self.check_in_date or '-'}"
         )
         if self.check_out_date:
             lines.append(
-                f"📅 Check-out   : "
+                f"📅 {l['check_out']}   : "
                 f"{self.check_out_date}"
             )
         lines.append(
-            f"👥 Tamu Dewasa : "
-            f"{self.num_guests or '-'} orang"
+            f"👥 {l['guests']} : "
+            f"{self.num_guests or '-'} {l['people']}"
         )
         if self.num_children:
             lines.append(
-                f"👶 Anak-anak   : "
-                f"{self.num_children} orang"
+                f"👶 {l['children']}   : "
+                f"{self.num_children} {l['people']}"
             )
         if self.special_request:
             lines.append(
-                f"📝 Request     : "
+                f"📝 {l['request']}     : "
                 f"{self.special_request}"
             )
         lines.append(
-            f"📞 WhatsApp    : "
+            f"📞 {l['whatsapp']}    : "
             f"{self.wa_number or '-'}"
         )
         lines.append(
-            f"👤 Nama        : "
+            f"👤 {l['name']}        : "
             f"{self.guest_name or '-'}"
         )
         return "\n".join(lines)
@@ -168,6 +190,7 @@ class BookingState(BaseModel):
     availability_checked: bool = False
     availability_result: dict | None = None
     booking_ref: str | None = None
+    language: str = "id"
     # Diisi setelah booking draft berhasil dibuat
 
     def current_upsell(self) -> UpsellOffer | None:

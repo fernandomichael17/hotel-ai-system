@@ -111,6 +111,7 @@ ATURAN:
 {target_rule}
 - DILARANG membuat asumsi status booking. Jangan katakan "kamar sudah disiapkan", "booking sedang diproses", atau kalimat sejenisnya sebelum tamu mengkonfirmasi summary. Tugasmu HANYA menanyakan parameter yang masih kurang.
 - JANGAN ulangi sapaan kalau sudah ada riwayat percakapan
+- Gunakan bahasa yang sesuai dengan bahasa percakapan tamu saat ini (Bahasa Indonesia atau English).
 
 Pertanyaan:"""
 
@@ -549,7 +550,6 @@ class BookingFormCollector:
                     ]
                     if final_words:
                         current_dict["guest_name"] = ' '.join(final_words).title()
-
         # --- FILTER DEFENSIVE NAMA TAMU ---
         if current_dict.get("guest_name"):
             current_dict["guest_name"] = self._filter_guest_name(current_dict["guest_name"])
@@ -570,14 +570,7 @@ class BookingFormCollector:
             has_history (bool): True jika sudah ada riwayat percakapan sebelumnya.
 
         Return:
-            str: Pertanyaan ramah dalam Bahasa Indonesia untuk parameter target.
-
-        Prioritas pertanyaan:
-        1. check_in_date (paling penting)
-        2. room_type
-        3. num_guests
-        4. guest_name
-        5. wa_number
+            str: Pertanyaan ramah dalam bahasa tamu untuk parameter target.
         """
         missing = state.params.missing_required()
 
@@ -586,6 +579,7 @@ class BookingFormCollector:
 
         # Cari target parameter yang paling prioritas dari daftar yang masih kurang
         target_param = self._get_priority_target(missing)
+        lang = state.language
 
         # Susun ringkasan parameter yang sudah terkumpul
         collected_summary = []
@@ -595,33 +589,58 @@ class BookingFormCollector:
         if params.check_out_date:
             collected_summary.append(f"Check-out: {params.check_out_date}")
         if params.room_type:
-            collected_summary.append(f"Kamar: {params.room_type}")
+            room_label = "Kamar" if lang == "id" else "Room"
+            collected_summary.append(f"{room_label}: {params.room_type}")
         if params.num_guests:
-            collected_summary.append(f"Tamu dewasa: {params.num_guests} orang")
+            guest_label = "Tamu dewasa" if lang == "id" else "Adult guests"
+            people_label = "orang" if lang == "id" else "people"
+            collected_summary.append(f"{guest_label}: {params.num_guests} {people_label}")
         if params.guest_name:
-            collected_summary.append(f"Nama tamu: {params.guest_name}")
+            name_label = "Nama tamu" if lang == "id" else "Guest name"
+            collected_summary.append(f"{name_label}: {params.guest_name}")
         if params.wa_number:
             collected_summary.append(f"WhatsApp: {params.wa_number}")
 
-        # Atur no_greeting_rule berdasarkan riwayat percakapan
-        if has_history:
-            no_greeting_rule = "JANGAN mulai dengan sapaan (Halo/Hi/dll)"
+        # Atur no_greeting_rule & target_rule berdasarkan bahasa
+        if lang == "id":
+            no_greeting_rule = "JANGAN mulai dengan sapaan (Halo/Hi/dll)" if has_history else "Boleh mulai dengan sapaan singkat"
+            target_rule = ""
+            if target_param == "tipe kamar":
+                target_rule = "- Sebutkan pilihan tipe kamar dan harganya (Standard Rp500rb, Deluxe Rp850rb, Suite Rp1,5jt) agar tamu bisa memilih."
+            elif target_param == "jumlah tamu dewasa":
+                target_rule = "- Tanya BERAPA ORANG (angka) dewasa yang akan menginap. Jangan tanya nama mereka."
+            elif target_param == "nama tamu":
+                target_rule = "- Tanya NAMA LENGKAP tamu yang akan menginap untuk keperluan registrasi."
+            elif target_param == "tanggal check-out":
+                target_rule = "- Tanya tanggal check-out atau berapa malam (durasi menginap) tamu akan menginap."
+            target = target_param
+            empty_val_label = "Belum ada"
         else:
-            no_greeting_rule = "Boleh mulai dengan sapaan singkat"
-
-        target_rule = ""
-        if target_param == "tipe kamar":
-            target_rule = "- Sebutkan pilihan tipe kamar dan harganya (Standard Rp500rb, Deluxe Rp850rb, Suite Rp1,5jt) agar tamu bisa memilih."
-        elif target_param == "jumlah tamu dewasa":
-            target_rule = "- Tanya BERAPA ORANG (angka) dewasa yang akan menginap. Jangan tanya nama mereka."
-        elif target_param == "nama tamu":
-            target_rule = "- Tanya NAMA LENGKAP tamu yang akan menginap untuk keperluan registrasi."
-        elif target_param == "tanggal check-out":
-            target_rule = "- Tanya tanggal check-out atau berapa malam (durasi menginap) tamu akan menginap."
+            no_greeting_rule = "DO NOT start with greetings (Hello/Hi/etc)" if has_history else "You may start with a brief greeting"
+            target_rule = ""
+            if target_param == "tipe kamar":
+                target_rule = "- List the available room types and their rates (Standard Rp500k, Deluxe Rp850k, Suite Rp1.5m) for the guest to choose from."
+            elif target_param == "jumlah tamu dewasa":
+                target_rule = "- Ask HOW MANY adult guests will be staying. Do not ask for their names."
+            elif target_param == "nama tamu":
+                target_rule = "- Ask for the FULL NAME of the guest who will be staying for registration purposes."
+            elif target_param == "tanggal check-out":
+                target_rule = "- Ask for the check-out date or how many nights (duration) they plan to stay."
+            
+            target_param_en = {
+                "nama tamu": "guest name",
+                "nomor WhatsApp": "WhatsApp number",
+                "tanggal check-in": "check-in date",
+                "tanggal check-out": "check-out date",
+                "tipe kamar": "room type",
+                "jumlah tamu dewasa": "number of adult guests"
+            }.get(target_param, target_param)
+            target = target_param_en
+            empty_val_label = "None"
 
         prompt = ASK_MISSING_PROMPT.format(
-            collected=", ".join(collected_summary) if collected_summary else "Belum ada",
-            target=target_param,
+            collected=", ".join(collected_summary) if collected_summary else empty_val_label,
+            target=target,
             no_greeting_rule=no_greeting_rule,
             target_rule=target_rule
         )
@@ -630,16 +649,26 @@ class BookingFormCollector:
             question = await asyncio.to_thread(self.llm.generate, prompt)
             return question.strip()
         except Exception:
-            # Fallback pertanyaan default sederhana jika LLM gagal
+            # Fallback pertanyaan default jika LLM gagal
             fallback_questions = {
-                "nama tamu": "Bisa tolong sebutkan atas nama siapa booking kamar ini?",
-                "nomor WhatsApp": "Berapa nomor WhatsApp yang bisa kami hubungi?",
-                "tanggal check-in": "Untuk tanggal berapa rencana check-in Anda?",
-                "tanggal check-out": "Untuk berapa malam Anda berencana menginap?",
-                "tipe kamar": "Tipe kamar apa yang Anda inginkan (Standard, Deluxe, atau Suite)?",
-                "jumlah tamu dewasa": "Untuk berapa orang tamu yang akan menginap?"
+                "id": {
+                    "nama tamu": "Bisa tolong sebutkan atas nama siapa booking kamar ini?",
+                    "nomor WhatsApp": "Berapa nomor WhatsApp yang bisa kami hubungi?",
+                    "tanggal check-in": "Untuk tanggal berapa rencana check-in Anda?",
+                    "tanggal check-out": "Untuk berapa malam Anda berencana menginap?",
+                    "tipe kamar": "Tipe kamar apa yang Anda inginkan (Standard, Deluxe, atau Suite)?",
+                    "jumlah tamu dewasa": "Untuk berapa orang tamu yang akan menginap?"
+                },
+                "en": {
+                    "nama tamu": "Could you please tell me the guest name for this booking?",
+                    "nomor WhatsApp": "What is the WhatsApp number we can contact you on?",
+                    "tanggal check-in": "What is your planned check-in date?",
+                    "tanggal check-out": "How many nights do you plan to stay?",
+                    "tipe kamar": "Which room type would you prefer (Standard, Deluxe, or Suite)?",
+                    "jumlah tamu dewasa": "How many adult guests will be staying?"
+                }
             }
-            return fallback_questions.get(target_param, f"Bisa infokan kembali mengenai {target_param}?")
+            return fallback_questions.get(lang, fallback_questions["id"]).get(target_param, f"Please tell me about your {target}.")
 
     def _extract_dates_programmatic(self, message: str) -> list[tuple[int, str]]:
         """
