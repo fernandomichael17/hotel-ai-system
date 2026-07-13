@@ -443,6 +443,19 @@ class BookingFormCollector:
                 digits = re.finditer(r'\b(\d{1,2})\b', msg_lower)
                 for m in digits:
                     digit_pos = m.start()
+                    
+                    # Cek apakah angka ini diikuti oleh nama bulan (artinya ini tanggal, bukan jumlah tamu)
+                    after = msg_lower[m.end():].strip().split()
+                    next_word = after[0] if after else ""
+                    month_names = {
+                        "januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus",
+                        "september", "oktober", "november", "desember", "jan", "feb", "mar", "apr",
+                        "may", "jun", "jul", "agu", "aug", "sep", "okt", "oct", "nov", "des",
+                        "january", "february", "march", "june", "july", "august", "december"
+                    }
+                    if next_word in month_names:
+                        continue
+
                     before = msg_lower[:digit_pos].strip().split()
                     last_word = before[-1] if before else ""
                     if last_word not in false_positive_prefixes:

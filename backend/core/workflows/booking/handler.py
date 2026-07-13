@@ -317,10 +317,20 @@ class BookingHandler:
 
         print(f"[DEBUG] _handle_collecting called. state={state.model_dump()}")
         # Extract dan merge params
+        old_params = state.params.model_dump()
         state.params = await self.collector.extract_params(
             message=ctx.message.content,
             current_state=state
         )
+
+        # Auto-fill profile
+        await self._enrich_guest_profile(ctx, state)
+
+        # Cek jika ada parameter kritis yang berubah selama tahap COLLECTING
+        critical_fields = {"room_type", "check_in_date", "check_out_date"}
+        for f in critical_fields:
+            if getattr(state.params, f) != old_params.get(f) and getattr(state.params, f) is not None:
+                state.availability_checked = False
 
         # Kalau bisa cek availability sekarang
         if state.params.room_type and state.params.check_in_date and not state.availability_checked:
@@ -411,6 +421,10 @@ class BookingHandler:
             message=ctx.message.content,
             current_state=state
         )
+        
+        state.params = new_params
+        await self._enrich_guest_profile(ctx, state)
+        new_params = state.params
         
         # Identifikasi parameter mana saja yang berubah dan tidak null
         changed_fields = [
@@ -737,3 +751,24 @@ class BookingHandler:
             ))
 
         return offers
+
+    async def _enrich_guest_profile(
+        self,
+        ctx: ConversationContext,
+        state: BookingState
+    ) -> None:
+        """
+        Auto-fill nama tamu menggunakan HMS Guest Lookup jika WA diisi dan nama kosong.
+        """
+        if state.params.wa_number and not state.params.guest_name:
+            try:
+                from backend.integrations.hms.schemas import GuestLookupRequest
+                lookup_req = GuestLookupRequest(
+                    wa_number=state.params.wa_number,
+                    hotel_id=ctx.hotel.hotel_id
+                )
+                lookup_res = await self.hms.lookup_guest(lookup_req)
+                if lookup_res.found and lookup_res.guest_name:
+                    state.params.guest_name = lookup_res.guest_name
+            except Exception as e:
+                logger.error(f"Gagal melakukan guest lookup ke HMS: {str(e)}", exc_info=True)
