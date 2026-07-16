@@ -107,5 +107,38 @@ class TestBookingWorkflow(unittest.TestCase):
         ))
         self.assertIsNone(res2.check_out_date)
 
+    def test_multilingual_language_detection_and_localization(self):
+        """Memastikan pendeteksian bahasa dan lokalisasi output bahasa Inggris/Indonesia bekerja dengan benar."""
+        from unittest.mock import MagicMock
+        from backend.core.workflows.booking.handler import BookingHandler
+        
+        mock_db = MagicMock()
+        handler = BookingHandler(mock_db)
+        
+        # Deteksi Bahasa
+        self.assertEqual(handler._detect_language("hello I want to book a room", "id"), "en")
+        self.assertEqual(handler._detect_language("halo saya mau pesan kamar", "en"), "id")
+        self.assertEqual(handler._detect_language("1", "en"), "en")
+        
+        # Lokalisasi Summary
+        params = CollectedParams(
+            room_type="standard",
+            check_in_date="2026-07-20",
+            check_out_date="2026-07-22",
+            num_guests=2,
+            guest_name="John Doe",
+            wa_number="0812345678"
+        )
+        
+        summary_en = params.to_summary(lang="en")
+        self.assertIn("Room Type", summary_en)
+        self.assertIn("Adult Guests", summary_en)
+        self.assertIn("Name", summary_en)
+        
+        summary_id = params.to_summary(lang="id")
+        self.assertIn("Tipe Kamar", summary_id)
+        self.assertIn("Tamu Dewasa", summary_id)
+        self.assertIn("Nama", summary_id)
+
 if __name__ == "__main__":
     unittest.main()
