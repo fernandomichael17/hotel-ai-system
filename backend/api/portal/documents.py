@@ -17,6 +17,7 @@ from backend.rag.ingester import DocumentIngester
 from backend.db.repositories.document_repo import (
     DocumentRepository
 )
+from backend.tasks import ingest_document
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -91,13 +92,12 @@ async def list_documents(
 
 @router.post("/documents/upload", response_model=UploadResponse)
 async def upload_document(
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     current_hotel: TokenData = Depends(get_current_hotel),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Upload dokumen knowledge base dan jalankan ingest di latar belakang.
+    Upload dokumen knowledge base dan jalankan ingest di latar belakang menggunakan Celery.
     """
     ALLOWED_TYPES = {
         "application/pdf": ".pdf",
@@ -128,33 +128,22 @@ async def upload_document(
         .replace("-", " ")\
         .title()
     
-    # Simpan ke temp file
+    # Pastikan direktori temporary bersama ada
+    os.makedirs("backend/tmp", exist_ok=True)
+    
+    # Simpan ke temp file di bawah direktori bersama
     suffix = ALLOWED_TYPES[file.content_type]
     with tempfile.NamedTemporaryFile(
         delete=False,
-        suffix=suffix
+        suffix=suffix,
+        dir="backend/tmp"
     ) as tmp:
         tmp.write(content)
         tmp_path = tmp.name
     
-    # Background task untuk ingest
-    async def ingest_background():
-        try:
-            # Karena db session di background task memerlukan scope terpisah, kita buat instance ingester baru
-            ingester = DocumentIngester(db)
-            count = await ingester.ingest_file(
-                file_path=tmp_path,
-                hotel_id=current_hotel.hotel_id,
-                title=title
-            )
-            logger.info(f"Ingest sukses untuk {title}. Total {count} chunks dibuat.")
-        except Exception as e:
-            logger.error(f"Gagal memproses ingest dokumen di background: {str(e)}", exc_info=True)
-        finally:
-            if os.path.exists(tmp_path):
-                os.unlink(tmp_path)
-    
-    background_tasks.add_task(ingest_background)
+    # Pemicu background task Celery (Offline Process)
+    ingest_document.delay(tmp_path, current_hotel.hotel_id, title)
+    logger.info(f"Mendaftarkan task Celery untuk memproses dokumen {title} (path: {tmp_path})")
     
     return UploadResponse(
         success=True,

@@ -1,53 +1,55 @@
-from sentence_transformers import SentenceTransformer
+import httpx
+import logging
 from backend.config import settings
-import numpy as np
+
+logger = logging.getLogger(__name__)
 
 class TextEmbedder:
     """
-    Singleton embedder untuk menghasilkan representasi vektor (embeddings) dari teks.
-    
-    Menggunakan library sentence-transformers dengan model lokal yang di-load 
-    sekali saat inisialisasi awal aplikasi demi optimalisasi performa komputasi.
+    Client embedder yang terhubung ke server TEI (Text Embeddings Inference) eksternal.
+    Menghilangkan beban komputasi lokal dan load model ke RAM server utama.
     """
     _instance = None
-    _model = None
     
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._model = SentenceTransformer(
-                settings.embedding_model,
-                trust_remote_code=True,
-                model_kwargs={'default_task': 'retrieval'}
+            cls._instance.tei_url = settings.tei_url
+            cls._instance.client = httpx.Client(
+                base_url=settings.tei_url,
+                timeout=30.0
             )
+            logger.info(f"TextEmbedder diinisialisasi untuk menggunakan TEI server di: {settings.tei_url}")
         return cls._instance
-    
+
     def embed(self, text: str) -> list[float]:
         """
-        Mengonversi kueri teks pengguna ke dalam bentuk embedding 768 dimensi.
-        
-        Secara otomatis menambahkan prefix 'query: ' untuk model retrieval.
+        Mengonversi kueri teks pengguna ke bentuk embedding via TEI server.
+        Menambahkan prefix 'query: ' untuk model retrieval.
         """
         prefixed = f"query: {text}"
-        embedding = self._model.encode(
-            prefixed,
-            normalize_embeddings=True
-        )
-        return embedding.tolist()
-    
+        try:
+            response = self.client.post("/embed", json={"inputs": prefixed})
+            response.raise_for_status()
+            return response.json()[0]
+        except Exception as e:
+            logger.error(f"Gagal memanggil TEI /embed untuk query: {str(e)}")
+            raise
+
     def embed_passage(self, text: str) -> list[float]:
         """
-        Mengonversi teks dokumen ke dalam bentuk embedding 768 dimensi.
-        
-        Secara otomatis menambahkan prefix 'passage: ' untuk dokumen penjelas.
+        Mengonversi teks dokumen ke bentuk embedding via TEI server.
+        Menambahkan prefix 'passage: ' untuk dokumen penjelas.
         """
         prefixed = f"passage: {text}"
-        embedding = self._model.encode(
-            prefixed,
-            normalize_embeddings=True
-        )
-        return embedding.tolist()
-    
+        try:
+            response = self.client.post("/embed", json={"inputs": prefixed})
+            response.raise_for_status()
+            return response.json()[0]
+        except Exception as e:
+            logger.error(f"Gagal memanggil TEI /embed untuk passage: {str(e)}")
+            raise
+
     def embed_batch(
         self,
         texts: list[str],
@@ -55,18 +57,18 @@ class TextEmbedder:
         batch_size: int = 32
     ) -> list[list[float]]:
         """
-        Mengembed kumpulan teks secara bersamaan untuk mempercepat proses tokenisasi berkas RAG.
+        Mengembed kumpulan teks (batch) secara bersamaan melalui server TEI.
         """
         prefix = "passage: " if is_passage else "query: "
         prefixed = [f"{prefix}{t}" for t in texts]
         
-        embeddings = self._model.encode(
-            prefixed,
-            batch_size=batch_size,
-            normalize_embeddings=True,
-            show_progress_bar=len(texts) > 10
-        )
-        return embeddings.tolist()
+        try:
+            response = self.client.post("/embed", json={"inputs": prefixed})
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Gagal memanggil TEI /embed untuk batch: {str(e)}")
+            raise
 
 # Singleton instance
 embedder = TextEmbedder()

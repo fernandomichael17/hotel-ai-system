@@ -68,6 +68,10 @@ class Settings(BaseSettings):
     jwt_expire_hours: int = 24
     allowed_origins: list[str] = ["*"]
 
+    # Redis & TEI (Large Scale Architecture)
+    redis_url: str = "redis://localhost:6379/0"
+    tei_url: str = "http://localhost:8002"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
