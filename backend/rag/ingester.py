@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.integrations.llm.embedder import embedder
@@ -30,7 +31,7 @@ class DocumentIngester:
             )
             
         logger.info(f"Memulai proses RAG ingest untuk file: {file_path}")
-        text = self._parse_with_docling(file_path)
+        text = await asyncio.to_thread(self._parse_with_docling, file_path)
         logger.info(f"Parsing berkas selesai. Panjang teks: {len(text)} karakter.")
         
         return await self.ingest_text(
@@ -54,9 +55,10 @@ class DocumentIngester:
             return 0
             
         logger.info(f"Menghasilkan {len(chunks)} chunks untuk teks '{title}'. Memulai ekstraksi embedding...")
-        embeddings = embedder.embed_batch(
+        embeddings = await asyncio.to_thread(
+            embedder.embed_batch,
             chunks,
-            is_passage=True
+            True
         )
         
         logger.info(f"Pembersihan chunks lama untuk source_file: '{source_file}' milik hotel_id: {hotel_id}")

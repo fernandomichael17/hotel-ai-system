@@ -1,0 +1,2645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Admin Portal Metland Hotel AI Chatbot - Kelola basis pengetahuan dokumen hotel, booking masuk, dan check-in tamu secara real-time.">
+  <title>Portal Admin — Metland Hotel</title>
+  
+  <!-- Google Fonts Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-dark: #0A1628;
+      --accent: #00B4A6;
+      --secondary: #F5A623;
+      --success: #2ECC71;
+      --danger: #E74C3C;
+      --card-bg: #132238;
+      --text-light: #F0F4F8;
+      --text-muted: #8892A0;
+      
+      --font-title: 'Outfit', system-ui, -apple-system, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--primary-dark);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ==========================================================================
+       LOGIN VIEW STYLING
+       ========================================================================== */
+    #view-login {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+      background-color: var(--primary-dark);
+    }
+
+    .login-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo {
+      font-family: var(--font-title);
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-light);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(10, 22, 40, 0.6);
+      color: var(--text-light);
+      font-family: var(--font-body);
+      font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 180, 166, 0.2);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* ==========================================================================
+       BUTTONS
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s, opacity 0.2s;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: #0A1628;
+    }
+
+    .btn-primary:hover {
+      background-color: #009d91;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: #0A1628;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e0941b;
+    }
+
+    .btn-secondary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #c0392b;
+    }
+
+    .btn-danger-outline {
+      background-color: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .btn-danger-outline:hover {
+      background-color: rgba(231, 76, 60, 0.1);
+    }
+
+    .btn-logout {
+      background-color: rgba(231, 76, 60, 0.15);
+      border: 1px solid rgba(231, 76, 60, 0.3);
+      color: #ff8080;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+      background-color: var(--danger);
+      color: white;
+      border-color: var(--danger);
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .error-message {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 12px;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    /* ==========================================================================
+       PORTAL LAYOUT STYLING
+       ========================================================================== */
+    #view-portal {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Sidebar */
+    #sidebar {
+      width: 220px;
+      background-color: var(--card-bg);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 24px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background-color: var(--card-bg);
+    }
+
+    .sidebar-hotel-name {
+      font-family: var(--font-title);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-hotel-slug {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .sidebar-menu {
+      flex-grow: 1;
+      padding: 24px 0;
+      list-style: none;
+    }
+
+    .menu-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .menu-item:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: var(--text-light);
+    }
+
+    .menu-item.active {
+      background-color: var(--accent);
+      color: #0A1628;
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Main Area */
+    #main {
+      flex-grow: 1;
+      margin-left: 220px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: var(--primary-dark);
+    }
+
+    /* Header */
+    #portal-header {
+      height: 60px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      background-color: var(--primary-dark);
+      z-index: 90;
+    }
+
+    .header-title {
+      font-family: var(--font-title);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    .api-status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.online {
+      background-color: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse-green 2s infinite;
+    }
+
+    .status-dot.offline {
+      background-color: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+      animation: pulse-red 2s infinite;
+    }
+
+    @keyframes pulse-green {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+    }
+
+    @keyframes pulse-red {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+    }
+
+    /* Mobile Top Bar */
+    .mobile-top-bar {
+      display: none;
+      height: 60px;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 110;
+    }
+
+    .hamburger-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* Sidebar Overlay (Mobile) */
+    #sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: 95;
+      display: none;
+      backdrop-filter: blur(2px);
+    }
+
+    #sidebar-overlay.active {
+      display: block;
+    }
+
+    /* Content Pane */
+    #content {
+      padding: 24px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      flex-grow: 1;
+    }
+
+    /* Card styling */
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .card-teal {
+      border: 1px solid var(--accent);
+    }
+
+    .card-gold {
+      border: 1px solid var(--secondary);
+    }
+
+    .card-title {
+      font-family: var(--font-title);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: -12px;
+      margin-bottom: 20px;
+    }
+
+    /* ==========================================================================
+       SECTION 1: KNOWLEDGE BASE STYLING
+       ========================================================================== */
+    .drag-drop-zone {
+      border: 2px dashed var(--accent);
+      background-color: rgba(0, 180, 166, 0.02);
+      border-radius: 8px;
+      padding: 32px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 16px;
+    }
+
+    .drag-drop-zone:hover, .drag-drop-zone.dragover {
+      background-color: rgba(0, 180, 166, 0.08);
+      border-style: solid;
+    }
+
+    .drag-drop-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .drag-drop-text {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .drag-drop-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .file-preview-card {
+      background-color: rgba(10, 22, 40, 0.5);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      font-size: 13px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .file-preview-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-remove-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .faq-textarea {
+      width: 100%;
+      min-height: 70px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(10, 22, 40, 0.6);
+      color: var(--text-light);
+      font-family: var(--font-body);
+      font-size: 14px;
+      margin-bottom: 12px;
+      resize: vertical;
+    }
+
+    .faq-textarea:focus {
+      outline: none;
+      border-color: var(--secondary);
+    }
+
+    .quick-tests {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    }
+
+    .quick-test-btn {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .quick-test-btn:hover {
+      background-color: var(--secondary);
+      color: #0A1628;
+      border-color: var(--secondary);
+    }
+
+    .bot-response-card {
+      background-color: var(--text-light);
+      color: #0A1628;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .bot-response-section {
+      margin-bottom: 12px;
+    }
+
+    .bot-response-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .bot-label-teal {
+      color: #008f83;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bot-label-gray {
+      color: #556270;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bot-context-toggle {
+      background: none;
+      border: none;
+      color: #1A73E8;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .bot-context-text {
+      font-family: monospace;
+      background-color: #f0f4f8;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #333;
+      white-space: pre-wrap;
+      word-break: break-all;
+      border: 1px solid #ddd;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      margin-top: 8px;
+    }
+
+    .section-title {
+      font-family: var(--font-title);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .btn-refresh {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-refresh:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .doc-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .doc-card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .doc-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .doc-icon {
+      font-size: 24px;
+    }
+
+    .doc-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 2px;
+      word-break: break-all;
+    }
+
+    .doc-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-success {
+      background-color: rgba(46, 204, 113, 0.15);
+      color: var(--success);
+    }
+
+    .badge-warning {
+      background-color: rgba(245, 166, 35, 0.15);
+      color: var(--secondary);
+    }
+
+    .badge-danger {
+      background-color: rgba(231, 76, 60, 0.15);
+      color: var(--danger);
+    }
+
+    .badge-gray {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+    }
+
+    /* Skeleton loaders */
+    .skeleton {
+      background: linear-gradient(90deg, var(--card-bg) 25%, rgba(255, 255, 255, 0.05) 50%, var(--card-bg) 75%);
+      background-size: 200% 100%;
+      animation: pulse-skeleton 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    .skeleton-card {
+      height: 72px;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    @keyframes pulse-skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ==========================================================================
+       SECTION 2: BOOKINGS STYLING
+       ========================================================================== */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .filter-tab {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .filter-tab:hover {
+      background-color: rgba(255, 255, 255, 0.06);
+      color: var(--text-light);
+    }
+
+    .filter-tab.active {
+      background-color: var(--accent);
+      color: #0A1628;
+      border-color: var(--accent);
+    }
+
+    .booking-grid, .stay-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .booking-card, .stay-card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .booking-header, .stay-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .booking-date, .stay-room-badge {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .booking-body, .stay-body {
+      flex-grow: 1;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .info-icon {
+      width: 16px;
+      text-align: center;
+    }
+
+    .booking-request, .booking-upsell {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
+    .booking-request-title, .booking-upsell-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .action-row .btn {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    /* Tooltip */
+    [data-tooltip] {
+      position: relative;
+    }
+
+    [data-tooltip]::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background-color: #000;
+      color: #fff;
+      font-size: 11px;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    [data-tooltip]:hover::before {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* ==========================================================================
+       TOAST & MODAL DIALOG
+       ========================================================================== */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 350px;
+      width: 100%;
+    }
+
+    .toast {
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: slide-in 0.3s ease forwards;
+    }
+
+    .toast-success {
+      background-color: var(--success);
+    }
+
+    .toast-danger {
+      background-color: var(--danger);
+    }
+
+    @keyframes slide-in {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    #modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      backdrop-filter: blur(4px);
+    }
+
+    #modal-box {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      animation: modal-fade 0.2s ease;
+    }
+
+    @keyframes modal-fade {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-title {
+      font-family: var(--font-title);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-light);
+    }
+
+    .modal-message {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .modal-actions .btn {
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE DESIGN (TABLETS / PHONES)
+       ========================================================================== */
+    @media (max-width: 768px) {
+      #sidebar {
+        transform: translateX(-100%);
+      }
+
+      #sidebar.active {
+        transform: translateX(0);
+      }
+
+      #main {
+        margin-left: 0;
+      }
+
+      #portal-header {
+        display: none;
+      }
+
+      .mobile-top-bar {
+        display: flex;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .booking-grid, .stay-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. VIEW LOGIN
+       ========================================================================== -->
+  <div id="view-login" class="hidden">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">🏨 Metland Hotel Portal</div>
+        <div class="login-subtitle">Masuk dengan akun hotel Anda</div>
+      </div>
+      
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label" for="login-api-url">Backend URL</label>
+          <input type="text" id="login-api-url" class="form-input" value="http://localhost:8001" placeholder="http://localhost:8001">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="login-hotel-slug">Kode Hotel</label>
+          <input type="text" id="login-hotel-slug" class="form-input" placeholder="contoh: tambun, cikeas" autocapitalize="none" autocomplete="off" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="Password hotel" required>
+        </div>
+        
+        <button type="submit" id="btn-login-submit" class="btn btn-primary btn-full">Masuk</button>
+      </form>
+      
+      <div id="login-error-message" class="error-message"></div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       2. VIEW PORTAL
+       ========================================================================== -->
+  <div id="view-portal" class="hidden">
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay"></div>
+    
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div id="sidebar-hotel-name-text" class="sidebar-hotel-name">🏨 Nama Hotel</div>
+        <div class="sidebar-hotel-slug">Slug: <span id="sidebar-hotel-slug-text">hotel_slug</span></div>
+      </div>
+      
+      <ul class="sidebar-menu">
+        <li class="menu-item active" data-page="knowledge-base">
+          <span>📄</span> Knowledge Base
+        </li>
+        <li class="menu-item" data-page="bookings">
+          <span>📋</span> Booking Masuk
+        </li>
+        <li class="menu-item" data-page="stays">
+          <span>👥</span> Tamu Menginap
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <div id="sidebar-user-name-text" class="sidebar-user-name">Hotel Name</div>
+        <button type="button" id="btn-logout" class="btn-logout">Keluar</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div id="main">
+      <!-- Top Bar for Mobile -->
+      <div class="mobile-top-bar">
+        <button type="button" id="hamburger-btn" class="hamburger-btn">☰</button>
+        <div id="mobile-title-text" class="header-title">Knowledge Base</div>
+        <div class="api-status-indicator">
+          <span class="status-dot offline"></span>
+        </div>
+      </div>
+      
+      <!-- Top Bar for Desktop -->
+      <header id="portal-header">
+        <div id="header-title-text" class="header-title">Knowledge Base</div>
+        <div class="api-status-indicator">
+          <span id="api-status-dot" class="status-dot offline"></span>
+          <span id="api-status-text">Terputus</span>
+        </div>
+      </header>
+      
+      <!-- Content Panel -->
+      <main id="content">
+        
+        <!-- ==================================================================
+             PANE A: KNOWLEDGE BASE
+             ================================================================== -->
+        <div id="page-knowledge-base" class="page-pane hidden">
+          <!-- Section 1: Upload Dokumen -->
+          <div class="card card-teal">
+            <div class="card-title">Upload Dokumen Baru</div>
+            <div class="card-subtitle">Unggah dokumen hotel untuk memperbarui basis pengetahuan asisten chatbot Anda</div>
+            
+            <div id="drop-zone" class="drag-drop-zone">
+              <div class="drag-drop-icon">📁</div>
+              <div class="drag-drop-text">Drag & drop file di sini</div>
+              <div class="drag-drop-sub">atau klik untuk pilih file</div>
+              <div class="drag-drop-sub" style="margin-top: 4px; opacity: 0.7;">Format: PDF, DOCX, TXT · Maks 10MB</div>
+            </div>
+            
+            <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.txt">
+            
+            <div id="file-preview" class="file-preview-card hidden">
+              <div class="file-preview-info">
+                <span id="preview-icon">📄</span>
+                <div>
+                  <div id="preview-name" style="font-weight: 600;">document.pdf</div>
+                  <div id="preview-size" class="doc-meta">2.4 MB</div>
+                </div>
+              </div>
+              <button type="button" id="btn-remove-file" class="file-remove-btn">&times;</button>
+            </div>
+            
+            <div id="upload-status" class="hidden" style="margin-bottom: 16px; font-size: 13px; font-weight: 500;"></div>
+            
+            <button type="button" id="btn-upload" class="btn btn-primary btn-full" disabled>Upload & Proses</button>
+          </div>
+          
+          <!-- Section 2: Test FAQ -->
+          <div class="card card-gold">
+            <div class="card-title">Test Bot FAQ</div>
+            <div class="card-subtitle">Coba tanyakan sesuatu untuk verifikasi dokumen yang diupload</div>
+            
+            <textarea id="faq-input" class="faq-textarea" placeholder="Ketik pertanyaan untuk test..."></textarea>
+            
+            <div class="quick-tests">
+              <button type="button" class="quick-test-btn" data-q="💰 Harga kamar?">💰 Harga kamar?</button>
+              <button type="button" class="quick-test-btn" data-q="🏊 Kolam renang?">🏊 Kolam renang?</button>
+              <button type="button" class="quick-test-btn" data-q="📶 Password WiFi?">📶 Password WiFi?</button>
+              <button type="button" class="quick-test-btn" data-q="🅿️ Parkir gratis?">🅿️ Parkir gratis?</button>
+              <button type="button" class="quick-test-btn" data-q="🍳 Sarapan include?">🍳 Sarapan include?</button>
+              <button type="button" class="quick-test-btn" data-q="❌ Kebijakan cancel?">❌ Kebijakan cancel?</button>
+            </div>
+            
+            <button type="button" id="btn-ask-faq" class="btn btn-secondary">Tanya Bot</button>
+            
+            <div id="faq-loading" class="hidden" style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
+              🤔 Bot sedang menjawab...
+            </div>
+            
+            <div id="faq-response-container" class="hidden">
+              <div class="bot-response-card">
+                <div class="bot-response-section">
+                  <span class="bot-label-teal">Jawaban Bot:</span>
+                  <p id="faq-bot-answer" style="line-height: 1.5; font-weight: 500;"></p>
+                </div>
+                <div class="bot-response-section" style="margin-top: 12px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 8px;">
+                  <span class="bot-label-gray">Sumber Dokumen:</span>
+                  <span id="faq-bot-sources" style="font-size: 13px;">0 chunk dokumen digunakan</span>
+                </div>
+                <div class="bot-response-section">
+                  <button type="button" id="faq-context-toggle" class="bot-context-toggle">
+                    <span>Lihat selengkapnya</span>
+                  </button>
+                  <pre id="faq-context-preview" class="bot-context-text hidden"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Section 3: Daftar Dokumen -->
+          <div class="section-header">
+            <h2 class="section-title">Dokumen Aktif</h2>
+            <button type="button" id="btn-refresh-docs" class="btn-refresh" title="Refresh Daftar Dokumen">🔄</button>
+          </div>
+          
+          <div id="docs-loading" class="hidden">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+          </div>
+          
+          <div id="docs-empty" class="empty-state hidden">
+            Belum ada dokumen. Upload dokumen pertama untuk mulai.
+          </div>
+          
+          <div id="docs-list" class="doc-list">
+            <!-- List dokumen akan dirender secara dinamis -->
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             PANE B: BOOKINGS
+             ================================================================== -->
+        <div id="page-bookings" class="page-pane hidden">
+          <div class="section-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 class="section-title">Booking Masuk via Chatbot</h2>
+              <span id="bookings-count-badge" class="badge badge-success">0</span>
+            </div>
+            <button type="button" id="btn-refresh-bookings" class="btn-refresh" title="Refresh Booking">🔄</button>
+          </div>
+          
+          <div class="filter-tabs">
+            <button type="button" class="filter-tab active" data-status="all">Semua</button>
+            <button type="button" class="filter-tab" data-status="draft">Draft</button>
+            <button type="button" class="filter-tab" data-status="submitted_to_sales">Menunggu Konfirmasi</button>
+            <button type="button" class="filter-tab" data-status="confirmed">Dikonfirmasi</button>
+            <button type="button" class="filter-tab" data-status="cancelled">Dibatalkan</button>
+          </div>
+          
+          <div id="bookings-loading" class="hidden">
+            <div class="booking-grid">
+              <div class="skeleton" style="height: 220px; border-radius: 10px;"></div>
+              <div class="skeleton" style="height: 220px; border-radius: 10px;"></div>
+              <div class="skeleton" style="height: 220px; border-radius: 10px;"></div>
+            </div>
+          </div>
+          
+          <div id="bookings-empty" class="empty-state hidden">
+            Belum ada booking yang masuk. Tamu perlu chat dengan bot untuk booking.
+          </div>
+          
+          <div id="bookings-list" class="booking-grid">
+            <!-- List booking akan dirender secara dinamis -->
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             PANE C: GUEST STAYS (TAMU MENGINAP)
+             ================================================================== -->
+        <div id="page-stays" class="page-pane hidden">
+          <!-- Section 1: Input Check-in manual -->
+          <div class="card card-teal">
+            <div class="card-title">Input Check-in Tamu</div>
+            <div class="card-subtitle">Untuk tamu yang belum terdaftar di sistem chatbot</div>
+            
+            <form id="form-checkin">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="checkin-guest-name">Nama Tamu*</label>
+                  <input type="text" id="checkin-guest-name" class="form-input" placeholder="Nama lengkap tamu" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="checkin-wa-number">Nomor WhatsApp*</label>
+                  <input type="tel" id="checkin-wa-number" class="form-input" placeholder="628xxx atau 08xxx" required>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Minimal 10 digit</div>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="checkin-room-number">Nomor Kamar*</label>
+                  <input type="text" id="checkin-room-number" class="form-input" placeholder="Contoh: 101, 205" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="checkin-booking-source">Sumber Booking*</label>
+                  <select id="checkin-booking-source" class="form-input" required>
+                    <option value="manual_fo" selected>Manual Front Office</option>
+                    <option value="walk_in">Walk-in</option>
+                    <option value="phone">Telepon</option>
+                    <option value="ota">OTA (Online Travel Agent)</option>
+                    <option value="chatbot">Chatbot</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="checkin-date">Tanggal Check-in*</label>
+                  <input type="date" id="checkin-date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="checkout-date">Tanggal Check-out*</label>
+                  <input type="date" id="checkout-date" class="form-input" required>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="checkin-hms-id">Nomor Booking HMS (Opsional)</label>
+                <input type="text" id="checkin-hms-id" class="form-input" placeholder="Isi jika ada dari HMS">
+              </div>
+              
+              <button type="submit" id="btn-submit-checkin" class="btn btn-primary btn-full">Daftarkan Check-in</button>
+            </form>
+            
+            <div id="checkin-status" class="hidden" style="margin-top: 16px; font-size: 13px; font-weight: 500; text-align: center;"></div>
+          </div>
+          
+          <!-- Section 2: Daftar Tamu Aktif -->
+          <div class="section-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 class="section-title">Tamu Sedang Menginap</h2>
+              <span id="stays-count-badge" class="badge badge-success">0</span>
+            </div>
+            <button type="button" id="btn-refresh-stays" class="btn-refresh" title="Refresh Daftar Tamu">🔄</button>
+          </div>
+          
+          <div id="stays-loading" class="hidden">
+            <div class="stay-grid">
+              <div class="skeleton" style="height: 180px; border-radius: 10px;"></div>
+              <div class="skeleton" style="height: 180px; border-radius: 10px;"></div>
+              <div class="skeleton" style="height: 180px; border-radius: 10px;"></div>
+            </div>
+          </div>
+          
+          <div id="stays-empty" class="empty-state hidden">
+            Tidak ada tamu yang sedang check-in. Input check-in tamu di atas.
+          </div>
+          
+          <div id="stays-list" class="stay-grid">
+            <!-- List tamu aktif akan dirender secara dinamis -->
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Confirm Dialog Modal -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal-box">
+      <h3 id="modal-title" class="modal-title">Konfirmasi</h3>
+      <p id="modal-message" class="modal-message">Apakah Anda yakin?</p>
+      <div class="modal-actions">
+        <button type="button" id="btn-modal-cancel" class="btn btn-secondary">Batal</button>
+        <button type="button" id="btn-modal-confirm" class="btn btn-danger">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT LOGICAL STRUCTURE
+       ========================================================================== -->
+  <script>
+    // State Global Aplikasi
+    const state = {
+      token: null,
+      hotelId: null,
+      hotelName: null,
+      hotelSlug: null,
+      apiUrl: "http://localhost:8001",
+      currentPage: "knowledge-base",
+      isLoading: false,
+    };
+
+    // Callback dinamis untuk modal konfirmasi
+    let modalConfirmCallback = null;
+    
+    // Penyimpanan data lokal untuk di-filter di client-side
+    let localBookings = [];
+    let currentBookingFilter = "all";
+    
+    // Menyimpan file yang diunggah sementara
+    let selectedFile = null;
+    
+    // Menyimpan string respon lengkap dari FAQ bot
+    let fullFaqContext = "";
+
+    /**
+     * Menginisialisasi aplikasi dengan membaca konfigurasi dari localStorage.
+     * @returns {void}
+     */
+    function init() {
+      state.token = localStorage.getItem("portal_token");
+      state.hotelId = localStorage.getItem("portal_hotel_id");
+      state.hotelName = localStorage.getItem("portal_hotel_name");
+      state.hotelSlug = localStorage.getItem("portal_hotel_slug");
+      state.apiUrl = localStorage.getItem("portal_api_url") || "http://localhost:8001";
+      
+      document.getElementById("login-api-url").value = state.apiUrl;
+      
+      setupEventListeners();
+      
+      if (state.token) {
+        showPortal();
+      } else {
+        showLogin();
+      }
+    }
+
+    /**
+     * Mendaftarkan semua event listener yang diperlukan oleh aplikasi.
+     * @returns {void}
+     */
+    function setupEventListeners() {
+      // Login Form
+      document.getElementById("form-login").addEventListener("submit", handleLoginSubmit);
+      
+      // Logout Button
+      document.getElementById("btn-logout").addEventListener("click", logout);
+      
+      // Navigation Menu
+      const menuItems = document.querySelectorAll(".menu-item");
+      menuItems.forEach(item => {
+        item.addEventListener("click", () => {
+          const page = item.getAttribute("data-page");
+          navigateTo(page);
+          
+          // Tutup sidebar di tampilan mobile setelah navigasi
+          document.getElementById("sidebar").classList.remove("active");
+          document.getElementById("sidebar-overlay").classList.remove("active");
+        });
+      });
+      
+      // Mobile Hamburger Toggle
+      document.getElementById("hamburger-btn").addEventListener("click", () => {
+        document.getElementById("sidebar").classList.add("active");
+        document.getElementById("sidebar-overlay").classList.add("active");
+      });
+      
+      document.getElementById("sidebar-overlay").addEventListener("click", () => {
+        document.getElementById("sidebar").classList.remove("active");
+        document.getElementById("sidebar-overlay").classList.remove("active");
+      });
+      
+      // Modal Actions
+      document.getElementById("btn-modal-cancel").onclick = hideConfirmModal;
+      document.getElementById("btn-modal-confirm").onclick = () => {
+        if (modalConfirmCallback) modalConfirmCallback();
+        hideConfirmModal();
+      };
+      
+      setupPageSpecificListeners();
+    }
+
+    /**
+     * Mendaftarkan event listener spesifik halaman portal (Knowledge Base, Bookings, Stays).
+     * @returns {void}
+     */
+    function setupPageSpecificListeners() {
+      // Knowledge Base upload zone
+      setupDragAndDrop();
+      document.getElementById("btn-upload").onclick = uploadFile;
+      document.getElementById("btn-refresh-docs").onclick = loadKnowledgeBase;
+      
+      // FAQ test
+      document.getElementById("btn-ask-faq").onclick = handleFaqSubmit;
+      document.getElementById("faq-input").onkeydown = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleFaqSubmit();
+        }
+      };
+      setupQuickFAQButtons();
+      document.getElementById("faq-context-toggle").onclick = toggleFaqContext;
+
+      // Bookings
+      document.getElementById("btn-refresh-bookings").onclick = () => loadBookings();
+      setupBookingFilters();
+      
+      // Stays
+      document.getElementById("btn-refresh-stays").onclick = loadGuestStays;
+      document.getElementById("form-checkin").onsubmit = handleCheckinSubmit;
+    }
+
+    /**
+     * Menampilkan antarmuka halaman login dan menyembunyikan portal dashboard.
+     * @returns {void}
+     */
+    function showLogin() {
+      document.getElementById("view-login").classList.remove("hidden");
+      document.getElementById("view-portal").classList.add("hidden");
+      
+      document.getElementById("login-hotel-slug").value = "";
+      document.getElementById("login-password").value = "";
+      document.getElementById("login-error-message").innerText = "";
+    }
+
+    /**
+     * Menampilkan antarmuka portal dashboard dan memuat data halaman default.
+     * @returns {void}
+     */
+    function showPortal() {
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("view-portal").classList.remove("hidden");
+      
+      document.getElementById("sidebar-hotel-name-text").innerText = state.hotelName || "Hotel Metland";
+      document.getElementById("sidebar-hotel-slug-text").innerText = state.hotelSlug || "";
+      document.getElementById("sidebar-user-name-text").innerText = state.hotelName || "Hotel Metland";
+      
+      navigateTo("knowledge-base");
+      
+      // Mulai checking health status
+      checkApiStatus();
+      if (!window.healthCheckInterval) {
+        window.healthCheckInterval = setInterval(checkApiStatus, 60000);
+      }
+    }
+
+    /**
+     * Melakukan perpindahan halaman aktif pada portal dashboard.
+     * @param {string} page - Kode halaman tujuan ("knowledge-base", "bookings", atau "stays").
+     * @returns {void}
+     */
+    function navigateTo(page) {
+      state.currentPage = page;
+      
+      const menuItems = document.querySelectorAll(".menu-item");
+      menuItems.forEach(item => {
+        if (item.getAttribute("data-page") === page) {
+          item.classList.add("active");
+        } else {
+          item.classList.remove("active");
+        }
+      });
+      
+      const panes = document.querySelectorAll(".page-pane");
+      panes.forEach(pane => pane.classList.add("hidden"));
+      
+      updatePagePane(page);
+    }
+
+    /**
+     * Memperbarui tampilan judul header dan mengaktifkan panel halaman yang dipilih.
+     * @param {string} page - Kode halaman tujuan.
+     * @returns {void}
+     */
+    function updatePagePane(page) {
+      const headerTitle = document.getElementById("header-title-text");
+      const mobileTitle = document.getElementById("mobile-title-text");
+      
+      if (page === "knowledge-base") {
+        headerTitle.innerText = "Knowledge Base";
+        mobileTitle.innerText = "Knowledge Base";
+        document.getElementById("page-knowledge-base").classList.remove("hidden");
+        loadKnowledgeBase();
+      } else if (page === "bookings") {
+        headerTitle.innerText = "Booking Masuk";
+        mobileTitle.innerText = "Booking Masuk";
+        document.getElementById("page-bookings").classList.remove("hidden");
+        loadBookings();
+      } else if (page === "stays") {
+        headerTitle.innerText = "Tamu Menginap";
+        mobileTitle.innerText = "Tamu Menginap";
+        document.getElementById("page-stays").classList.remove("hidden");
+        setDefaultCheckinDates();
+        loadGuestStays();
+      }
+    }
+
+    /**
+     * Melakukan pemanggilan API ke backend.
+     * @param {string} method - Metode HTTP (GET, POST, PATCH, DELETE, dll).
+     * @param {string} endpoint - Endpoint API (dimulai dengan garis miring).
+     * @param {Object|FormData|null} body - Body request.
+     * @returns {Promise<Object>} Object berisi status ok, data, atau error.
+     */
+    async function apiCall(method, endpoint, body = null) {
+      const url = `${state.apiUrl}${endpoint}`;
+      const headers = {};
+
+      if (state.token) {
+        headers["Authorization"] = `Bearer ${state.token}`;
+      }
+
+      const options = { method: method, headers: headers };
+
+      if (body) {
+        if (body instanceof FormData) {
+          options.body = body;
+        } else {
+          headers["Content-Type"] = "application/json";
+          options.body = JSON.stringify(body);
+        }
+      }
+
+      try {
+        const response = await fetch(url, options);
+        
+        if (response.status === 401) {
+          showToast("Sesi berakhir, silakan login kembali", "danger");
+          setTimeout(() => { logout(); }, 2000);
+          return { ok: false, data: null, error: "Unauthorized" };
+        }
+
+        let data = null;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          data = await response.text();
+        }
+
+        if (!response.ok) {
+          const errMsg = (data && data.detail) || (data && data.message) || `Error ${response.status}`;
+          return { ok: false, data: null, error: errMsg };
+        }
+
+        return { ok: true, data: data, error: null };
+      } catch (error) {
+        showToast("Gagal terhubung ke server", "danger");
+        return { ok: false, data: null, error: "Network Error" };
+      }
+    }
+
+    /**
+     * Mengeluarkan staff hotel dari sesi portal dan membersihkan localStorage.
+     * @returns {void}
+     */
+    function logout() {
+      localStorage.removeItem("portal_token");
+      localStorage.removeItem("portal_hotel_id");
+      localStorage.removeItem("portal_hotel_name");
+      localStorage.removeItem("portal_hotel_slug");
+      
+      state.token = null;
+      state.hotelId = null;
+      state.hotelName = null;
+      state.hotelSlug = null;
+      
+      if (window.healthCheckInterval) {
+        clearInterval(window.healthCheckInterval);
+        window.healthCheckInterval = null;
+      }
+      
+      showLogin();
+    }
+
+    /**
+     * Memeriksa status kesehatan server backend (endpoint /health) secara periodik.
+     * @returns {Promise<void>}
+     */
+    async function checkApiStatus() {
+      const dot = document.getElementById("api-status-dot");
+      const text = document.getElementById("api-status-text");
+      const mobileDot = document.querySelector(".mobile-top-bar .status-dot");
+      
+      try {
+        const response = await fetch(`${state.apiUrl}/health`, { method: 'GET' });
+        if (response.ok) {
+          dot.className = "status-dot online";
+          if (mobileDot) mobileDot.className = "status-dot online";
+          text.innerText = "Terhubung";
+        } else {
+          dot.className = "status-dot offline";
+          if (mobileDot) mobileDot.className = "status-dot offline";
+          text.innerText = "Terputus";
+        }
+      } catch (error) {
+        dot.className = "status-dot offline";
+        if (mobileDot) mobileDot.className = "status-dot offline";
+        text.innerText = "Terputus";
+      }
+    }
+
+    /**
+     * Menangani pengiriman formulir login admin portal ke server backend.
+     * @param {Event} e - Objek event submit formulir.
+     * @returns {Promise<void>}
+     */
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      
+      const apiUrlInput = document.getElementById("login-api-url").value.trim();
+      const slug = document.getElementById("login-hotel-slug").value.trim();
+      const password = document.getElementById("login-password").value;
+      const errorEl = document.getElementById("login-error-message");
+      
+      errorEl.innerText = "";
+      if (!apiUrlInput || !slug || !password) {
+        errorEl.innerText = "Semua field harus diisi.";
+        return;
+      }
+      
+      state.apiUrl = apiUrlInput;
+      
+      const btn = document.getElementById("btn-login-submit");
+      btn.setAttribute("disabled", "true");
+      btn.innerText = "Memverifikasi...";
+      
+      const res = await apiCall("POST", "/portal/auth/login", { hotel_slug: slug, password: password });
+      
+      btn.removeAttribute("disabled");
+      btn.innerText = "Masuk";
+      
+      handleLoginResponse(res, apiUrlInput, slug, errorEl);
+    }
+
+    /**
+     * Memproses hasil respon login dari server dan melakukan penyimpanan state.
+     * @param {Object} res - Respon dari API.
+     * @param {string} apiUrl - URL API Backend yang digunakan.
+     * @param {string} slug - Slug hotel yang diinputkan.
+     * @param {HTMLElement} errorEl - Elemen kontainer error.
+     * @returns {void}
+     */
+    function handleLoginResponse(res, apiUrl, slug, errorEl) {
+      if (res.ok && res.data) {
+        const d = res.data;
+        const token = d.token || d.access_token;
+        const hotelId = d.hotel_id || d.id;
+        const hotelName = d.hotel_name || d.name || slug;
+        const hotelSlug = d.hotel_slug || d.slug || slug;
+        
+        if (!token) {
+          errorEl.innerText = "Server tidak mengembalikan token autentikasi.";
+          return;
+        }
+        
+        localStorage.setItem("portal_token", token);
+        localStorage.setItem("portal_hotel_id", String(hotelId));
+        localStorage.setItem("portal_hotel_name", hotelName);
+        localStorage.setItem("portal_hotel_slug", hotelSlug);
+        localStorage.setItem("portal_api_url", apiUrl);
+        
+        state.token = token;
+        state.hotelId = hotelId;
+        state.hotelName = hotelName;
+        state.hotelSlug = hotelSlug;
+        
+        showToast("Login berhasil", "success");
+        showPortal();
+      } else {
+        errorEl.innerText = res.error || "Slug atau password salah";
+      }
+    }
+
+    // ==========================================================================
+    // MODULE KNOWLEDGE BASE
+    // ==========================================================================
+
+    /**
+     * Menginisialisasi event drag and drop untuk area upload dokumen.
+     * @returns {void}
+     */
+    function setupDragAndDrop() {
+      const zone = document.getElementById("drop-zone");
+      const input = document.getElementById("file-input");
+      const removeBtn = document.getElementById("btn-remove-file");
+      
+      zone.onclick = () => input.click();
+      
+      zone.ondragover = (e) => {
+        e.preventDefault();
+        zone.classList.add("dragover");
+      };
+      
+      zone.ondragleave = () => {
+        zone.classList.remove("dragover");
+      };
+      
+      zone.ondrop = (e) => {
+        e.preventDefault();
+        zone.classList.remove("dragover");
+        if (e.dataTransfer.files.length > 0) {
+          handleFileSelected(e.dataTransfer.files[0]);
+        }
+      };
+      
+      input.onchange = () => {
+        if (input.files.length > 0) {
+          handleFileSelected(input.files[0]);
+        }
+      };
+      
+      removeBtn.onclick = clearSelectedFile;
+    }
+
+    /**
+     * Menangani pemilihan file dari input atau drag & drop.
+     * @param {File} file - Objek file yang dipilih.
+     * @returns {void}
+     */
+    function handleFileSelected(file) {
+      const allowed = [".pdf", ".docx", ".txt"];
+      const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+      
+      if (!allowed.includes(ext)) {
+        showToast("Format file tidak didukung. Gunakan PDF, DOCX, atau TXT.", "danger");
+        return;
+      }
+      
+      if (file.size > 10 * 1024 * 1024) {
+        showToast("Ukuran file melebihi 10MB.", "danger");
+        return;
+      }
+      
+      selectedFile = file;
+      
+      document.getElementById("preview-name").innerText = file.name;
+      document.getElementById("preview-size").innerText = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+      
+      let icon = "📄";
+      if (ext === ".txt") icon = "📃";
+      else if (ext === ".docx") icon = "📝";
+      document.getElementById("preview-icon").innerText = icon;
+      
+      document.getElementById("file-preview").classList.remove("hidden");
+      document.getElementById("btn-upload").removeAttribute("disabled");
+    }
+
+    /**
+     * Menghapus file yang sedang dipilih dari antarmuka pratinjau.
+     * @returns {void}
+     */
+    function clearSelectedFile() {
+      selectedFile = null;
+      document.getElementById("file-input").value = "";
+      document.getElementById("file-preview").classList.add("hidden");
+      document.getElementById("btn-upload").setAttribute("disabled", "true");
+      
+      const status = document.getElementById("upload-status");
+      status.classList.add("hidden");
+      status.innerText = "";
+    }
+
+    /**
+     * Mengunggah file terpilih ke backend dan memprosesnya.
+     * @returns {Promise<void>}
+     */
+    async function uploadFile() {
+      if (!selectedFile) return;
+      
+      const btn = document.getElementById("btn-upload");
+      const status = document.getElementById("upload-status");
+      
+      btn.setAttribute("disabled", "true");
+      btn.innerText = "Mengunggah...";
+      status.className = "error-message";
+      status.style.color = "var(--text-muted)";
+      status.innerText = "⏳ Dokumen sedang diproses...";
+      status.classList.remove("hidden");
+      
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      
+      const res = await apiCall("POST", "/portal/documents/upload", formData);
+      handleUploadResponse(res);
+    }
+
+    /**
+     * Menangani respon dari server setelah mengunggah file.
+     * @param {Object} res - Objek respon dari fungsi apiCall.
+     * @returns {void}
+     */
+    function handleUploadResponse(res) {
+      const btn = document.getElementById("btn-upload");
+      const status = document.getElementById("upload-status");
+      
+      btn.innerText = "Upload & Proses";
+      
+      if (res.ok) {
+        status.style.color = "var(--success)";
+        status.innerText = "✅ Dokumen berhasil diupload. Bot akan siap menjawab dalam 30 detik.";
+        showToast("Dokumen berhasil diunggah", "success");
+        
+        setTimeout(() => { clearSelectedFile(); }, 2000);
+        setTimeout(() => { loadKnowledgeBase(); }, 5000);
+      } else {
+        status.style.color = "var(--danger)";
+        status.innerText = `❌ ${res.error}`;
+        btn.removeAttribute("disabled");
+      }
+    }
+
+    /**
+     * Mendaftarkan semua event listener pada tombol FAQ cepat.
+     * @returns {void}
+     */
+    function setupQuickFAQButtons() {
+      const btns = document.querySelectorAll(".quick-test-btn");
+      btns.forEach(btn => {
+        btn.onclick = () => {
+          const q = btn.getAttribute("data-q");
+          document.getElementById("faq-input").value = q;
+          handleFaqSubmit();
+        };
+      });
+    }
+
+    /**
+     * Mengirimkan pertanyaan FAQ ke backend untuk diuji oleh chatbot.
+     * @returns {Promise<void>}
+     */
+    async function handleFaqSubmit() {
+      const q = document.getElementById("faq-input").value.trim();
+      if (!q) return;
+      
+      const btn = document.getElementById("btn-ask-faq");
+      const loading = document.getElementById("faq-loading");
+      const resContainer = document.getElementById("faq-response-container");
+      
+      btn.setAttribute("disabled", "true");
+      loading.classList.remove("hidden");
+      resContainer.classList.add("hidden");
+      
+      const res = await apiCall("POST", "/portal/documents/test-faq", { question: q });
+      
+      btn.removeAttribute("disabled");
+      loading.classList.add("hidden");
+      
+      if (res.ok) {
+        displayFaqResponse(res.data);
+      } else {
+        showToast(`Gagal memuat jawaban: ${res.error}`, "danger");
+      }
+    }
+
+    /**
+     * Menampilkan respon jawaban chatbot di antarmuka FAQ.
+     * @param {Object} data - Data respon dari server.
+     * @returns {void}
+     */
+    function displayFaqResponse(data) {
+      const answerEl = document.getElementById("faq-bot-answer");
+      const sourcesEl = document.getElementById("faq-bot-sources");
+      const contextEl = document.getElementById("faq-context-preview");
+      const toggleEl = document.getElementById("faq-context-toggle");
+      const resContainer = document.getElementById("faq-response-container");
+      
+      answerEl.innerText = data.answer || "Tidak ada jawaban dari bot.";
+      const count = (data.sources_used !== undefined) ? data.sources_used : 0;
+      sourcesEl.innerText = `${count} chunk dokumen digunakan`;
+      
+      fullFaqContext = data.context || "";
+      if (fullFaqContext) {
+        contextEl.innerText = fullFaqContext.length > 200 
+          ? fullFaqContext.substring(0, 200) + "..." 
+          : fullFaqContext;
+        toggleEl.style.display = "inline-flex";
+        toggleEl.querySelector("span").innerText = "Lihat selengkapnya";
+        contextEl.classList.remove("hidden");
+      } else {
+        toggleEl.style.display = "none";
+        contextEl.classList.add("hidden");
+      }
+      
+      resContainer.classList.remove("hidden");
+    }
+
+    /**
+     * Melakukan toggle (buka/tutup) pratinjau teks konteks lengkap FAQ.
+     * @returns {void}
+     */
+    function toggleFaqContext() {
+      const contextEl = document.getElementById("faq-context-preview");
+      const toggleText = document.getElementById("faq-context-toggle").querySelector("span");
+      
+      if (contextEl.classList.contains("expanded")) {
+        contextEl.innerText = fullFaqContext.length > 200 
+          ? fullFaqContext.substring(0, 200) + "..." 
+          : fullFaqContext;
+        contextEl.classList.remove("expanded");
+        toggleText.innerText = "Lihat selengkapnya";
+      } else {
+        contextEl.innerText = fullFaqContext;
+        contextEl.classList.add("expanded");
+        toggleText.innerText = "Sembunyikan";
+      }
+    }
+
+    /**
+     * Memuat daftar dokumen aktif dari server dan menampilkannya di halaman.
+     * @returns {Promise<void>}
+     */
+    async function loadKnowledgeBase() {
+      const loading = document.getElementById("docs-loading");
+      const empty = document.getElementById("docs-empty");
+      const list = document.getElementById("docs-list");
+      
+      loading.classList.remove("hidden");
+      empty.classList.add("hidden");
+      list.innerHTML = "";
+      
+      const res = await apiCall("GET", "/portal/documents");
+      loading.classList.add("hidden");
+      
+      if (!res.ok) {
+        showToast(`Gagal memuat dokumen: ${res.error}`, "danger");
+        return;
+      }
+      
+      const docs = res.data || [];
+      if (docs.length === 0) {
+        empty.classList.remove("hidden");
+        return;
+      }
+      
+      renderDocsList(docs);
+    }
+
+    /**
+     * Merender daftar dokumen yang diterima dari API ke antarmuka pengguna.
+     * @param {Array<Object>} docs - Array data dokumen.
+     * @returns {void}
+     */
+    function renderDocsList(docs) {
+      const list = document.getElementById("docs-list");
+      list.innerHTML = "";
+      
+      docs.forEach(doc => {
+        const card = document.createElement("div");
+        card.className = "doc-card";
+        
+        const ext = doc.filename.substring(doc.filename.lastIndexOf(".")).toLowerCase();
+        let icon = "📄";
+        if (ext === ".txt") icon = "📃";
+        else if (ext === ".docx") icon = "📝";
+        
+        const sizeFormatted = doc.file_size ? `${(doc.file_size / 1024).toFixed(1)} KB` : "-";
+        const dateFormatted = doc.uploaded_at ? formatDate(doc.uploaded_at.substring(0, 10)) : "-";
+        
+        card.innerHTML = `
+          <div class="doc-info">
+            <span class="doc-icon">${icon}</span>
+            <div>
+              <div class="doc-name">${escapeHTML(doc.filename)}</div>
+              <div class="doc-meta">${sizeFormatted} &middot; Diunggah: ${dateFormatted}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="badge badge-success">Aktif</span>
+            <button type="button" class="btn btn-danger-outline" style="padding: 6px 10px; font-size: 11px;" onclick="confirmDeleteDoc('${escapeJS(doc.filename)}')">🗑️</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    /**
+     * Menampilkan konfirmasi untuk menghapus suatu dokumen.
+     * @param {string} filename - Nama file dokumen yang ingin dihapus.
+     * @returns {void}
+     */
+    function confirmDeleteDoc(filename) {
+      const msg = `Hapus '${filename}'? Semua data RAG dari file ini akan dihapus permanen.`;
+      showConfirmModal("Hapus Dokumen", msg, () => {
+        deleteDocument(filename);
+      });
+    }
+
+    /**
+     * Menghapus dokumen dari basis pengetahuan melalui API.
+     * @param {string} filename - Nama file dokumen yang ingin dihapus.
+     * @returns {Promise<void>}
+     */
+    async function deleteDocument(filename) {
+      const res = await apiCall("DELETE", `/portal/documents/${encodeURIComponent(filename)}`);
+      if (res.ok) {
+        showToast("Dokumen berhasil dihapus", "success");
+        loadKnowledgeBase();
+      } else {
+        showToast(`Gagal menghapus dokumen: ${res.error}`, "danger");
+      }
+    }
+
+    // ==========================================================================
+    // MODULE BOOKINGS
+    // ==========================================================================
+
+    /**
+     * Menginisialisasi filter status booking pada tab navigasi filter.
+     * @returns {void}
+     */
+    function setupBookingFilters() {
+      const tabs = document.querySelectorAll("#page-bookings .filter-tab");
+      tabs.forEach(tab => {
+        tab.onclick = () => {
+          tabs.forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+          currentBookingFilter = tab.getAttribute("data-status");
+          renderBookings();
+        };
+      });
+    }
+
+    /**
+     * Memuat data booking dari server melalui API.
+     * @returns {Promise<void>}
+     */
+    async function loadBookings() {
+      const loading = document.getElementById("bookings-loading");
+      const empty = document.getElementById("bookings-empty");
+      const list = document.getElementById("bookings-list");
+      
+      loading.classList.remove("hidden");
+      empty.classList.add("hidden");
+      list.innerHTML = "";
+      
+      const res = await apiCall("GET", "/portal/hotel/bookings");
+      loading.classList.add("hidden");
+      
+      if (!res.ok) {
+        showToast(`Gagal memuat booking: ${res.error}`, "danger");
+        return;
+      }
+      
+      localBookings = res.data || [];
+      renderBookings();
+    }
+
+    /**
+     * Merender daftar booking ke antarmuka pengguna berdasarkan filter yang aktif.
+     * @returns {void}
+     */
+    function renderBookings() {
+      const list = document.getElementById("bookings-list");
+      const empty = document.getElementById("bookings-empty");
+      list.innerHTML = "";
+      
+      const filtered = localBookings.filter(b => 
+        currentBookingFilter === "all" || b.status === currentBookingFilter
+      );
+      
+      document.getElementById("bookings-count-badge").innerText = filtered.length;
+      
+      if (filtered.length === 0) {
+        empty.classList.remove("hidden");
+        return;
+      }
+      
+      empty.classList.add("hidden");
+      filtered.forEach(booking => {
+        list.appendChild(createBookingCard(booking));
+      });
+    }
+
+    /**
+     * Membuat elemen kartu booking untuk ditampilkan di grid booking.
+     * @param {Object} b - Objek data booking dari API.
+     * @returns {HTMLElement} Elemen div dari kartu booking.
+     */
+    function createBookingCard(b) {
+      const card = document.createElement("div");
+      card.className = "booking-card";
+      
+      const statusInfo = getBookingStatusDetails(b.status);
+      const waBtnHTML = b.wa_number 
+        ? `<a href="https://wa.me/${b.wa_number}" target="_blank" class="btn btn-secondary" style="text-decoration:none;">💬 Hubungi via WA</a>`
+        : "";
+      
+      const confirmBtnHTML = b.status === "submitted_to_sales"
+        ? `<button class="btn btn-primary" disabled data-tooltip="Segera tersedia">✅ Tandai Dikonfirmasi</button>`
+        : "";
+      
+      const requestHTML = b.special_request 
+        ? `<div class="booking-request"><div class="booking-request-title">Request:</div><div>${escapeHTML(b.special_request)}</div></div>` 
+        : "";
+        
+      const upsellHTML = b.upsell_accepted && b.upsell_accepted.length > 0
+        ? `<div class="booking-upsell"><div class="booking-upsell-title">✨ Upsell:</div><div>${escapeHTML(b.upsell_accepted.join(", "))}</div></div>` 
+        : "";
+        
+      const dateIn = formatDate(b.check_in_date);
+      const dateOut = formatDate(b.check_out_date);
+      const createdDate = b.created_at ? formatDate(b.created_at.substring(0, 10)) : "-";
+      
+      card.innerHTML = `
+        <div class="booking-header">
+          <span class="badge ${statusInfo.badgeClass}">${statusInfo.label}</span>
+          <span class="booking-date">${createdDate}</span>
+        </div>
+        <div class="booking-body">
+          <div class="info-row" style="font-weight:700; font-size:15px; margin-bottom:12px;">
+            👤 ${escapeHTML(b.guest_name || "Tamu")}
+          </div>
+          <div class="info-row">
+            <span class="info-icon">📞</span> ${formatWANumber(b.wa_number)}
+          </div>
+          <div class="info-row">
+            <span class="info-icon">🛏️</span> ${escapeHTML(b.room_type || "Tipe Kamar tidak dispesifikasi")}
+          </div>
+          <div class="info-row">
+            <span class="info-icon">📅</span> Check-in: ${dateIn}
+          </div>
+          <div class="info-row">
+            <span class="info-icon">📅</span> Check-out: ${dateOut}
+          </div>
+          <div class="info-row">
+            <span class="info-icon">👥</span> ${b.guest_count || 1} orang
+          </div>
+          ${requestHTML}
+          ${upsellHTML}
+        </div>
+        <div class="action-row">
+          ${waBtnHTML}
+          ${confirmBtnHTML}
+        </div>
+      `;
+      return card;
+    }
+
+    /**
+     * Mengembalikan detail representasi visual status booking.
+     * @param {string} status - Kode status booking.
+     * @returns {Object} Detail status berisi label dan class badge.
+     */
+    function getBookingStatusDetails(status) {
+      switch (status) {
+        case "draft":
+          return { label: "Draft", badgeClass: "badge-gray" };
+        case "submitted_to_sales":
+          return { label: "Menunggu Konfirmasi", badgeClass: "badge-warning" };
+        case "confirmed":
+          return { label: "Dikonfirmasi", badgeClass: "badge-success" };
+        case "cancelled":
+          return { label: "Dibatalkan", badgeClass: "badge-danger" };
+        default:
+          return { label: status || "Unknown", badgeClass: "badge-gray" };
+      }
+    }
+
+    // ==========================================================================
+    // MODULE GUEST STAYS (TAMU MENGINAP)
+    // ==========================================================================
+
+    /**
+     * Mengisi nilai default tanggal check-in (hari ini) dan check-out (besok) pada form check-in.
+     * @returns {void}
+     */
+    function setDefaultCheckinDates() {
+      const inEl = document.getElementById("checkin-date");
+      const outEl = document.getElementById("checkout-date");
+      if (!inEl || !outEl) return;
+      
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+      
+      inEl.value = today.toISOString().split('T')[0];
+      outEl.value = tomorrow.toISOString().split('T')[0];
+    }
+
+    /**
+     * Menangani proses pengiriman formulir pendaftaran check-in manual ke backend.
+     * @param {Event} e - Objek event submit formulir.
+     * @returns {Promise<void>}
+     */
+    async function handleCheckinSubmit(e) {
+      e.preventDefault();
+      
+      const guestName = document.getElementById("checkin-guest-name").value.trim();
+      const waInput = document.getElementById("checkin-wa-number").value.trim();
+      const roomNumber = document.getElementById("checkin-room-number").value.trim();
+      const source = document.getElementById("checkin-booking-source").value;
+      const inDate = document.getElementById("checkin-date").value;
+      const outDate = document.getElementById("checkout-date").value;
+      const hmsId = document.getElementById("checkin-hms-id").value.trim();
+      
+      const statusEl = document.getElementById("checkin-status");
+      statusEl.classList.add("hidden");
+      
+      if (!validateCheckinInput(guestName, waInput, roomNumber, inDate, outDate, statusEl)) {
+        return;
+      }
+      
+      const payload = {
+        hotel_id: parseInt(state.hotelId, 10),
+        wa_number: normalizeWANumber(waInput),
+        guest_name: guestName,
+        room_number: roomNumber,
+        check_in_date: inDate,
+        check_out_date: outDate,
+        booking_source: source,
+        hms_booking_id: hmsId || null
+      };
+      
+      executeCheckinSubmit(payload, guestName, statusEl);
+    }
+
+    /**
+     * Memvalidasi input formulir check-in tamu di sisi klien.
+     * @param {string} name - Nama tamu.
+     * @param {string} wa - Input nomor WA.
+     * @param {string} room - Nomor kamar.
+     * @param {string} checkin - Tanggal checkin.
+     * @param {string} checkout - Tanggal checkout.
+     * @param {HTMLElement} statusEl - Elemen status error untuk menampilkan pesan.
+     * @returns {boolean} True jika semua input valid, sebaliknya false.
+     */
+    function validateCheckinInput(name, wa, room, checkin, checkout, statusEl) {
+      if (!name || !wa || !room || !checkin || !checkout) {
+        showCheckinError("Semua field wajib diisi.", statusEl);
+        return false;
+      }
+      
+      const cleanedWA = wa.replace(/\D/g, '');
+      if (cleanedWA.length < 10) {
+        showCheckinError("Nomor WhatsApp minimal 10 digit.", statusEl);
+        return false;
+      }
+      
+      const checkinVal = new Date(checkin).getTime();
+      const checkoutVal = new Date(checkout).getTime();
+      if (checkoutVal <= checkinVal) {
+        showCheckinError("Tanggal check-out harus setelah tanggal check-in.", statusEl);
+        return false;
+      }
+      
+      return true;
+    }
+
+    /**
+     * Menampilkan pesan error validasi check-in pada formulir.
+     * @param {string} msg - Pesan kesalahan.
+     * @param {HTMLElement} statusEl - Elemen untuk meletakkan pesan kesalahan.
+     * @returns {void}
+     */
+    function showCheckinError(msg, statusEl) {
+      statusEl.style.color = "var(--danger)";
+      statusEl.innerText = `❌ ${msg}`;
+      statusEl.classList.remove("hidden");
+      showToast(msg, "danger");
+    }
+
+    /**
+     * Mengirim request data pendaftaran check-in tamu ke server.
+     * @param {Object} payload - Objek payload check-in.
+     * @param {string} guestName - Nama tamu yang didaftarkan.
+     * @param {HTMLElement} statusEl - Elemen status untuk menaruh hasil.
+     * @returns {Promise<void>}
+     */
+    async function executeCheckinSubmit(payload, guestName, statusEl) {
+      const btn = document.getElementById("btn-submit-checkin");
+      btn.setAttribute("disabled", "true");
+      btn.innerText = "Mendaftarkan...";
+      
+      const res = await apiCall("POST", "/portal/hotel/checkin", payload);
+      
+      btn.removeAttribute("disabled");
+      btn.innerText = "Daftarkan Check-in";
+      
+      if (res.ok) {
+        statusEl.style.color = "var(--success)";
+        statusEl.innerText = `✅ ${guestName} berhasil didaftarkan. Bot sekarang bisa mengenali tamu ini.`;
+        statusEl.classList.remove("hidden");
+        showToast("Check-in tamu berhasil didaftarkan", "success");
+        
+        document.getElementById("form-checkin").reset();
+        setDefaultCheckinDates();
+        loadGuestStays();
+      } else {
+        showCheckinError(res.error || "Gagal mendaftarkan check-in.", statusEl);
+      }
+    }
+
+    /**
+     * Memuat daftar tamu yang sedang menginap di hotel dari server.
+     * @returns {Promise<void>}
+     */
+    async function loadGuestStays() {
+      const loading = document.getElementById("stays-loading");
+      const empty = document.getElementById("stays-empty");
+      const list = document.getElementById("stays-list");
+      
+      loading.classList.remove("hidden");
+      empty.classList.add("hidden");
+      list.innerHTML = "";
+      
+      const res = await apiCall("GET", "/portal/hotel/stays");
+      loading.classList.add("hidden");
+      
+      if (!res.ok) {
+        showToast(`Gagal memuat daftar tamu: ${res.error}`, "danger");
+        return;
+      }
+      
+      const stays = res.data || [];
+      document.getElementById("stays-count-badge").innerText = stays.length;
+      
+      if (stays.length === 0) {
+        empty.classList.remove("hidden");
+        return;
+      }
+      
+      renderStaysList(stays);
+    }
+
+    /**
+     * Merender daftar tamu yang menginap ke layout grid antarmuka.
+     * @param {Array<Object>} stays - Array data tamu aktif.
+     * @returns {void}
+     */
+    function renderStaysList(stays) {
+      const list = document.getElementById("stays-list");
+      list.innerHTML = "";
+      
+      stays.forEach(stay => {
+        const card = document.createElement("div");
+        card.className = "stay-card";
+        
+        const waBtnHTML = stay.wa_number 
+          ? `<a href="https://wa.me/${stay.wa_number}" target="_blank" class="btn btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">💬 WA</a>`
+          : "";
+          
+        const dateIn = formatDate(stay.check_in_date);
+        const dateOut = formatDate(stay.check_out_date);
+        
+        card.innerHTML = `
+          <div class="stay-header">
+            <span class="badge badge-success">🟢 Menginap</span>
+            <span class="stay-room-badge" style="font-weight:700; color:var(--accent);">Kamar: ${escapeHTML(stay.room_number || "-")}</span>
+          </div>
+          <div class="stay-body">
+            <div class="info-row" style="font-weight:700; font-size:15px; margin-bottom:12px;">
+              👤 ${escapeHTML(stay.guest_name || "Tamu")}
+            </div>
+            <div class="info-row">
+              <span class="info-icon">📞</span> ${formatWANumber(stay.wa_number)}
+            </div>
+            <div class="info-row">
+              <span class="info-icon">📅</span> Check-in: ${dateIn}
+            </div>
+            <div class="info-row">
+              <span class="info-icon">📅</span> Check-out: ${dateOut}
+            </div>
+            <div class="info-row" style="margin-top:8px;">
+              <span class="badge badge-gray">Sumber: ${escapeHTML(stay.booking_source || "manual_fo")}</span>
+            </div>
+          </div>
+          <div class="action-row">
+            ${waBtnHTML}
+            <button type="button" class="btn btn-danger-outline" onclick="confirmCheckout('${escapeJS(stay.guest_name)}', '${escapeJS(stay.room_number)}', '${escapeJS(stay.wa_number)}')">🚪 Checkout</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    /**
+     * Menampilkan konfirmasi sebelum melakukan checkout tamu dari kamar hotel.
+     * @param {string} guestName - Nama tamu yang akan checkout.
+     * @param {string} roomNumber - Nomor kamar tamu.
+     * @param {string} waNumber - Nomor WhatsApp tamu yang akan dinormalisasi di server.
+     * @returns {void}
+     */
+    function confirmCheckout(guestName, roomNumber, waNumber) {
+      const msg = `Checkout ${guestName} dari kamar ${roomNumber}? Bot tidak akan bisa mengenali nomor ini setelah checkout.`;
+      showConfirmModal("Konfirmasi Checkout", msg, () => {
+        checkoutGuest(waNumber);
+      });
+    }
+
+    /**
+     * Mengirimkan request checkout tamu ke server melalui API.
+     * @param {string} waNumber - Nomor WhatsApp tamu.
+     * @returns {Promise<void>}
+     */
+    async function checkoutGuest(waNumber) {
+      const res = await apiCall("POST", "/portal/hotel/checkout", { wa_number: waNumber });
+      if (res.ok) {
+        showToast("Tamu berhasil checkout", "success");
+        loadGuestStays();
+      } else {
+        showToast(`Gagal checkout tamu: ${res.error}`, "danger");
+      }
+    }
+
+    // ==========================================================================
+    // UTILITIES / HELPERS
+    // ==========================================================================
+
+    /**
+     * Menampilkan pesan toast di pojok kanan atas layar.
+     * @param {string} message - Pesan yang akan ditampilkan.
+     * @param {string} type - Tipe toast ("success" atau "danger").
+     * @returns {void}
+     */
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      
+      const textNode = document.createElement("span");
+      textNode.innerText = message;
+      toast.appendChild(textNode);
+
+      const closeBtn = document.createElement("span");
+      closeBtn.innerHTML = "&times;";
+      closeBtn.style.cursor = "pointer";
+      closeBtn.style.marginLeft = "12px";
+      closeBtn.onclick = () => toast.remove();
+      toast.appendChild(closeBtn);
+
+      container.appendChild(toast);
+      
+      const duration = type === "success" ? 3000 : 4000;
+      setTimeout(() => { toast.remove(); }, duration);
+    }
+
+    /**
+     * Menampilkan dialog konfirmasi kustom kepada pengguna.
+     * @param {string} title - Judul modal.
+     * @param {string} message - Pesan deskripsi modal.
+     * @param {Function} onConfirm - Callback yang dipanggil saat tombol konfirmasi diklik.
+     * @returns {void}
+     */
+    function showConfirmModal(title, message, onConfirm) {
+      const overlay = document.getElementById("modal-overlay");
+      const titleEl = document.getElementById("modal-title");
+      const msgEl = document.getElementById("modal-message");
+      
+      if (!overlay || !titleEl || !msgEl) return;
+      
+      titleEl.innerText = title;
+      msgEl.innerText = message;
+      modalConfirmCallback = onConfirm;
+      
+      overlay.classList.remove("hidden");
+    }
+
+    /**
+     * Menyembunyikan dialog konfirmasi kustom.
+     * @returns {void}
+     */
+    function hideConfirmModal() {
+      const overlay = document.getElementById("modal-overlay");
+      if (overlay) {
+        overlay.classList.add("hidden");
+      }
+      modalConfirmCallback = null;
+    }
+
+    /**
+     * Menormalisasi nomor WhatsApp dari input user agar sesuai dengan format backend (628...).
+     * @param {string} num - Nomor input dari form.
+     * @returns {string} Nomor yang dinormalisasi.
+     */
+    function normalizeWANumber(num) {
+      if (!num) return "";
+      let cleaned = num.replace(/\D/g, '');
+      if (cleaned.startsWith('08')) {
+        cleaned = '628' + cleaned.substring(2);
+      } else if (cleaned.startsWith('8')) {
+        cleaned = '628' + cleaned.substring(1);
+      }
+      return cleaned;
+    }
+
+    /**
+     * Memformat nomor WhatsApp mentah menjadi format tampilan Indonesia yang rapi.
+     * @param {string} rawNum - Nomor WhatsApp mentah (misal: "6281234567890").
+     * @returns {string} Nomor WhatsApp terformat (misal: "0812-3456-7890").
+     */
+    function formatWANumber(rawNum) {
+      if (!rawNum) return "-";
+      let cleaned = rawNum.replace(/\D/g, '');
+      if (cleaned.startsWith('628')) {
+        cleaned = '0' + cleaned.substring(2);
+      }
+      if (cleaned.length >= 10 && cleaned.length <= 13) {
+        const p1 = cleaned.substring(0, 4);
+        const p2 = cleaned.substring(4, 8);
+        const p3 = cleaned.substring(8);
+        return `${p1}-${p2}-${p3}`;
+      }
+      return cleaned;
+    }
+
+    /**
+     * Memformat string tanggal YYYY-MM-DD menjadi format Indonesia yang mudah dibaca.
+     * @param {string} dateStr - Tanggal dalam format YYYY-MM-DD atau ISO.
+     * @returns {string} Tanggal terformat (misal: "15 Juli 2026").
+     */
+    function formatDate(dateStr) {
+      if (!dateStr) return "-";
+      const cleanDate = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+      const parts = cleanDate.split('-');
+      if (parts.length !== 3) return dateStr;
+      
+      const year = parts[0];
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const months = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      
+      if (monthIdx < 0 || monthIdx > 11 || isNaN(day) || isNaN(year)) {
+        return dateStr;
+      }
+      return `${day} ${months[monthIdx]} ${year}`;
+    }
+
+    /**
+     * Mengamankan string HTML dari serangan XSS dengan meng-escape karakter khusus.
+     * @param {string} str - String mentah.
+     * @returns {string} String yang aman untuk dimasukkan ke HTML.
+     */
+    function escapeHTML(str) {
+      if (!str) return "";
+      return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+    }
+
+    /**
+     * Meng-escape karakter khusus dalam string untuk digunakan di parameter javascript inline.
+     * @param {string} str - String mentah.
+     * @returns {string} String yang aman untuk dipasang pada parameter event handler string.
+     */
+    function escapeJS(str) {
+      if (!str) return "";
+      return str.replace(/'/g, "\\'")
+                .replace(/"/g, '\\"');
+    }
+
+    // Jalankan inisialisasi aplikasi saat window siap
+    window.onload = init;
+  </script>
+</body>
+</html>

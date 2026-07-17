@@ -744,6 +744,37 @@ class BookingFormCollector:
                 d_str = (today + timedelta(days=days)).strftime("%Y-%m-%d")
                 date_occurrences.append((idx, d_str))
 
+        # 2b. Deteksi nama hari relatif (misal "sabtu ini", "minggu depan", "hari senin")
+        days_map = {
+            "senin": 0, "selasa": 1, "rabu": 2, "kamis": 3,
+            "jumat": 4, "jum'at": 4, "sabtu": 5, "minggu": 6, "ahad": 6
+        }
+        day_pattern = (
+            r'\b(?:hari\s+)?(senin|selasa|rabu|kamis|jumat|jum\'at|sabtu|minggu|ahad)'
+            r'(?:\s+(ini|depan|esok|lusa))?\b'
+        )
+        day_matches = list(re.finditer(day_pattern, msg_lower))
+        for m in day_matches:
+            # Pastikan tidak tumpang tindih dengan pencocokan hari + bulan
+            overlap = any(dm.start() <= m.start() <= dm.end() for dm in matches)
+            if overlap:
+                continue
+            day_name = m.group(1)
+            modifier = m.group(2)
+            target_weekday = days_map[day_name]
+            today_weekday = today.weekday()
+            diff = (target_weekday - today_weekday) % 7
+            if diff == 0 and modifier == "depan":
+                diff = 7
+            elif diff == 0 and not modifier:
+                diff = 0
+            elif diff < 0:
+                diff += 7
+            if modifier == "depan" and diff < 7:
+                diff += 7
+            d_str = (today + timedelta(days=diff)).strftime("%Y-%m-%d")
+            date_occurrences.append((m.start(), d_str))
+
         # 3. Deteksi format angka hari saja (misal "tanggal 20")
         day_only_matches = re.finditer(r'\b(?:tanggal|tgl)\s*(\d{1,2})\b', msg_lower)
         for m in day_only_matches:
