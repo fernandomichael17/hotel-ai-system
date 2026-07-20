@@ -141,9 +141,12 @@ async def upload_document(
         tmp.write(content)
         tmp_path = tmp.name
     
+    # Konversi ke path relatif dan samakan pemisah direktori ke forward slash
+    rel_path = os.path.relpath(tmp_path).replace("\\", "/")
+    
     # Pemicu background task Celery (Offline Process)
-    ingest_document.delay(tmp_path, current_hotel.hotel_id, title)
-    logger.info(f"Mendaftarkan task Celery untuk memproses dokumen {title} (path: {tmp_path})")
+    ingest_document.delay(rel_path, current_hotel.hotel_id, title)
+    logger.info(f"Mendaftarkan task Celery untuk memproses dokumen {title} (path: {rel_path})")
     
     return UploadResponse(
         success=True,

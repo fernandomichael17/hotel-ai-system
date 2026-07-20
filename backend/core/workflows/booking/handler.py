@@ -71,42 +71,42 @@ class BookingHandler:
 
     LOCALIZED_STRINGS = {
         "id": {
-            "cancel_confirm": "Baik, proses booking dibatalkan. Jika sewaktu-waktu ingin memesan kamar, kami siap membantu! 😊",
-            "confirm_header": "Berikut ringkasan pesanan Anda:\n\n",
-            "confirm_footer": "\n\nApakah sudah sesuai? Ketik *ya* untuk lanjut atau *tidak* jika ingin mengubah.",
-            "correction_prompt": "Baik, apa yang ingin diubah? Silakan sebutkan informasi yang ingin diperbaiki.",
-            "correction_success_confirm": "Baik, data pemesanan telah diperbarui.\n\n",
-            "correction_success_collecting": "Baik, data pemesanan telah diperbarui. ",
-            "upsell_header": "Sebelum melanjutkan, kami memiliki beberapa penawaran menarik:\n\n",
-            "upsell_footer": "\n\nApakah Anda tertarik? Ketik *ya* untuk menerima atau *tidak* untuk melewati.",
-            "room_available": "Kamar *{room_type}* tersedia untuk tanggal *{check_in}*! ✅",
-            "price_per_night": "\n💰 Harga: *{price}/malam*",
-            "price_total": "\n💳 Total: *{price}*",
+            "cancel_confirm": "Baik Bapak/Ibu, proses booking dibatalkan. Jika sewaktu-waktu ingin memesan kamar kembali, kami siap melayani Anda! 😊",
+            "confirm_header": "Baik Bapak/Ibu, terima kasih. Berikut ringkasan pesanan Anda:\n\n",
+            "confirm_footer": "\n\nApakah rincian pesanan di atas sudah sesuai, Bapak/Ibu? Ketik *ya* untuk melanjutkan, atau *tidak* jika ada yang ingin diubah.",
+            "correction_prompt": "Baik, bagian data mana yang ingin disesuaikan atau diperbaiki Bapak/Ibu?",
+            "correction_success_confirm": "Terima kasih. Data pemesanan Anda telah berhasil kami perbarui.\n\n",
+            "correction_success_collecting": "Terima kasih. Data pemesanan Anda telah berhasil diperbarui. ",
+            "upsell_header": "Sebelum memproses reservasi Anda, kami memiliki penawaran istimewa untuk kenyamanan menginap Anda:\n\n",
+            "upsell_footer": "\n\nApakah Anda tertarik? Ketik *ya* jika Bapak/Ibu ingin menerima atau *tidak* untuk melewati.",
+            "room_available": "Kamar *{room_type}* tersedia untuk tanggal *{check_in}*. ✅",
+            "price_per_night": "\n💰 Tarif kamar: *{price}/malam*",
+            "price_total": "\n💳 Total biaya: *{price}*",
             "continue_booking_q": "Apakah Anda ingin melanjutkan untuk melakukan pemesanan?",
-            "faq_interrupt_reminder": "Ngomong-ngomong, kita masih dalam proses booking. ",
-            "decline_continue": "Baik, silakan beri tahu kami jika Anda memerlukan informasi lain atau bantuan lainnya! 😊",
-            "room_unavailable": "Maaf, kamar *{room_type}* tidak tersedia untuk tanggal *{check_in}*.",
-            "alternatives_text": "\n\nAlternatif yang tersedia: *{alts}*\nMau coba tipe kamar lain?",
-            "booking_success": "✅ Pesanan Anda sudah kami catat!\n\nNomor referensi: *{booking_ref}*\n\nTim kami akan menghubungi Anda di nomor ini dalam *1x24 jam* untuk konfirmasi dan informasi pembayaran.\n\nAda yang ingin ditanyakan lagi?"
+            "faq_interrupt_reminder": "Ngomong-ngomong, saat ini kita sedang dalam proses pemesanan kamar. ",
+            "decline_continue": "Baik, terima kasih. Silakan beri tahu kami jika ada informasi atau bantuan lain yang Bapak/Ibu butuhkan! 😊",
+            "room_unavailable": "Mohon maaf Bapak/Ibu, kamar *{room_type}* tidak tersedia untuk tanggal *{check_in}*.",
+            "alternatives_text": "\n\nSebagai alternatif, tipe kamar yang masih tersedia adalah: *{alts}*.\nApakah Bapak/Ibu tertarik mencoba tipe kamar lainnya?",
+            "booking_success": "Terima kasih banyak Bapak/Ibu. Pesanan Anda sudah kami catat!\n\nNomor referensi: *{booking_ref}*\n\nTim reservasi kami akan segera menghubungi Anda di nomor WhatsApp ini dalam waktu *1x24 jam* untuk konfirmasi akhir dan detail pembayaran.\n\nApakah ada hal lain yang ingin ditanyakan?"
         },
         "en": {
-            "cancel_confirm": "Alright, the booking process has been cancelled. If you would like to book a room in the future, we are ready to help! 😊",
-            "confirm_header": "Here is a summary of your booking:\n\n",
-            "confirm_footer": "\n\nIs everything correct? Type *yes* to proceed or *no* if you want to change something.",
-            "correction_prompt": "Alright, what would you like to change? Please specify the information you want to correct.",
-            "correction_success_confirm": "Alright, your booking details have been updated.\n\n",
-            "correction_success_collecting": "Alright, your booking details have been updated. ",
-            "upsell_header": "Before we proceed, we have some attractive offers for you:\n\n",
-            "upsell_footer": "\n\nAre you interested? Type *yes* to accept or *no* to skip.",
-            "room_available": "Room *{room_type}* is available for *{check_in}*! ✅",
+            "cancel_confirm": "Understood, the booking process has been cancelled. Please let us know if you need any assistance in the future. Have a great day! 😊",
+            "confirm_header": "Thank you. Here is a summary of your booking:\n\n",
+            "confirm_footer": "\n\nAre these details correct, sir/ma'am? Please type *yes* to proceed or *no* if you want to change something.",
+            "correction_prompt": "Certainly, what details would you like to update?",
+            "correction_success_confirm": "Thank you. Your booking details have been updated.\n\n",
+            "correction_success_collecting": "Thank you. Your booking details have been updated. ",
+            "upsell_header": "Before we proceed, we have some special offers to make your stay even more comfortable:\n\n",
+            "upsell_footer": "\n\nWould you like to add this to your reservation? Type *yes* to accept or *no* to skip.",
+            "room_available": "A *{room_type}* room is available for *{check_in}*. ✅",
             "price_per_night": "\n💰 Price: *{price}/night*",
-            "price_total": "\n💳 Total: *{price}*",
+            "price_total": "\n💳 Total cost: *{price}*",
             "continue_booking_q": "Would you like to proceed with the booking?",
-            "faq_interrupt_reminder": "By the way, we are still in the process of booking. ",
+            "faq_interrupt_reminder": "By the way, we are still in the process of booking your room. ",
             "decline_continue": "Alright, please let us know if you need any other information or assistance! 😊",
-            "room_unavailable": "Sorry, room *{room_type}* is not available for *{check_in}*.",
-            "alternatives_text": "\n\nAvailable alternatives: *{alts}*\nWould you like to try another room type?",
-            "booking_success": "✅ Your booking has been recorded!\n\nReference number: *{booking_ref}*\n\nOur team will contact you at this number within *24 hours* for confirmation and payment details.\n\nIs there anything else I can help you with?"
+            "room_unavailable": "We are sorry, but room *{room_type}* is not available for *{check_in}*.",
+            "alternatives_text": "\n\nAs an alternative, the following room types are available: *{alts}*.\nWould you like to try one of these options instead?",
+            "booking_success": "Thank you very much. Your booking has been recorded!\n\nReference number: *{booking_ref}*\n\nOur team will contact you at this number within *24 hours* for confirmation and payment details.\n\nIs there anything else I can help you with?"
         }
     }
 
@@ -593,8 +593,6 @@ class BookingHandler:
             state.step = BookingStep.CONFIRMING
             await session_mgr.save_booking_state(ctx.session_id, state)
             response += self._build_confirm_message(state)
-        elif was_inquiry:
-            response += self._get_string("continue_booking_q", lang)
         else:
             question = await self.collector.generate_question(
                 state=state,

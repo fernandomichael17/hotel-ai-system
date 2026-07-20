@@ -29,16 +29,6 @@ services:
       timeout: 5s
       retries: 5
 
-  tei-embeddings:
-    image: ghcr.io/huggingface/text-embeddings-inference:1.5
-    container_name: hotel_tei
-    ports:
-      - "8002:80"
-    volumes:
-      - tei_model_cache:/data
-    command: --model-id jinaai/jina-embeddings-v5-text-nano
-    restart: unless-stopped
-
   waha:
     image: devlikeapro/waha
     container_name: hotel_waha
@@ -69,7 +59,6 @@ services:
       - LLM_BASE_URL=http://host.docker.internal:8000
       - WAHA_URL=http://waha:3000
       - REDIS_URL=redis://redis:6379/0
-      - TEI_URL=http://tei-embeddings:80
     env_file:
       - ../.env
     volumes:
@@ -90,7 +79,6 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://hotel_user:hotel_pass@postgres:5432/hotel_chatbot
       - REDIS_URL=redis://redis:6379/0
-      - TEI_URL=http://tei-embeddings:80
     env_file:
       - ../.env
     volumes:
@@ -100,4 +88,3 @@ services:
 volumes:
   postgres_data:
   waha_data:
-  tei_model_cache:

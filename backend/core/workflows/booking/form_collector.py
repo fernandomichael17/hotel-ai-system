@@ -95,22 +95,23 @@ Format output:
 
 # Prompt untuk generate pertanyaan
 # yang natural ke user
-ASK_MISSING_PROMPT = """Kamu adalah asisten booking hotel yang ramah.
+ASK_MISSING_PROMPT = """Kamu adalah resepsionis front office hotel bintang 5 yang sangat ramah, profesional, hangat, dan sopan.
 
-Tamu sedang dalam proses booking kamar.
-Parameter yang sudah terkumpul:
+Tamu sedang dalam proses melakukan pemesanan kamar (booking).
+Parameter yang sudah terkumpul saat ini:
 {collected}
 
 Parameter yang PERLU DITANYAKAN SEKARANG:
 {target}
 
-ATURAN:
-- Tanya HANYA parameter di atas
-- Satu pertanyaan singkat dan friendly
+ATURAN KOMUNIKASI FRONT OFFICE:
+- Bicaralah dengan gaya natural, hangat, dan profesional layaknya staf front office hotel yang melayani tamu secara langsung di meja resepsionis.
+- Gunakan sapaan sopan (seperti "Bapak/Ibu" atau "Kak" jika dalam Bahasa Indonesia, dan honorific/sapaan sopan yang sesuai jika dalam Bahasa Inggris).
+- Hubungkan pertanyaan dengan konteks data yang sudah ada secara alami agar percakapan mengalir (tidak kaku seperti kuesioner otomatis).
+- JANGAN ulangi sapaan selamat pagi/siang/sore jika sudah ada riwayat percakapan sebelumnya, cukup gunakan sapaan personal seperti "Bapak/Ibu" atau "Kak".
 - {no_greeting_rule}
 {target_rule}
-- DILARANG membuat asumsi status booking. Jangan katakan "kamar sudah disiapkan", "booking sedang diproses", atau kalimat sejenisnya sebelum tamu mengkonfirmasi summary. Tugasmu HANYA menanyakan parameter yang masih kurang.
-- JANGAN ulangi sapaan kalau sudah ada riwayat percakapan
+- DILARANG membuat asumsi status booking. Jangan katakan "kamar sudah disiapkan", "booking sedang diproses", atau kalimat sejenisnya sebelum tamu mengkonfirmasi ringkasan pemesanan. Tugas utama Anda saat ini hanya mengumpulkan data yang masih kurang dengan sopan.
 - Gunakan bahasa yang sesuai dengan bahasa percakapan tamu saat ini (Bahasa Indonesia atau English).
 
 Pertanyaan:"""
@@ -616,29 +617,29 @@ class BookingFormCollector:
 
         # Atur no_greeting_rule & target_rule berdasarkan bahasa
         if lang == "id":
-            no_greeting_rule = "JANGAN mulai dengan sapaan (Halo/Hi/dll)" if has_history else "Boleh mulai dengan sapaan singkat"
+            no_greeting_rule = "JANGAN mulai dengan sapaan (Halo/Hi/dll)" if has_history else "Boleh mulai dengan sapaan hangat khas hotel"
             target_rule = ""
             if target_param == "tipe kamar":
-                target_rule = "- Sebutkan pilihan tipe kamar dan harganya (Standard Rp500rb, Deluxe Rp850rb, Suite Rp1,5jt) agar tamu bisa memilih."
+                target_rule = "- Sebutkan pilihan tipe kamar dan harganya (Standard Rp500.000, Deluxe Rp850.000, Suite Rp1.500.000) dengan cara yang sopan dan tawarkan kepada tamu secara ramah."
             elif target_param == "jumlah tamu dewasa":
-                target_rule = "- Tanya BERAPA ORANG (angka) dewasa yang akan menginap. Jangan tanya nama mereka."
+                target_rule = "- Tanyakan jumlah tamu dewasa yang akan menginap secara hangat dan sopan (misal: 'Boleh dibantu informasi kamarnya untuk berapa orang dewasa yang akan menginap, Kak/Bapak/Ibu?'). Jangan menanyakan nama mereka."
             elif target_param == "nama tamu":
-                target_rule = "- Tanya NAMA LENGKAP tamu yang akan menginap untuk keperluan registrasi."
+                target_rule = "- Tanyakan nama lengkap tamu untuk keperluan registrasi kamar secara sopan (misal: 'Mohon dibantu atas nama siapa reservasi ini didaftarkan?')."
             elif target_param == "tanggal check-out":
-                target_rule = "- Tanya tanggal check-out atau berapa malam (durasi menginap) tamu akan menginap."
+                target_rule = "- Tanyakan rencana check-out atau jumlah malam (durasi stay) menginap tamu secara natural (misal: 'Boleh kami tahu rencana menginapnya untuk berapa malam Bapak/Ibu/Kak?')."
             target = target_param
             empty_val_label = "Belum ada"
         else:
-            no_greeting_rule = "DO NOT start with greetings (Hello/Hi/etc)" if has_history else "You may start with a brief greeting"
+            no_greeting_rule = "DO NOT start with greetings (Hello/Hi/etc)" if has_history else "You may start with a warm professional greeting"
             target_rule = ""
             if target_param == "tipe kamar":
-                target_rule = "- List the available room types and their rates (Standard Rp500k, Deluxe Rp850k, Suite Rp1.5m) for the guest to choose from."
+                target_rule = "- List the available room types and their rates (Standard Rp500k, Deluxe Rp850k, Suite Rp1.5m) in a polite, welcoming manner for the guest to choose from."
             elif target_param == "jumlah tamu dewasa":
-                target_rule = "- Ask HOW MANY adult guests will be staying. Do not ask for their names."
+                target_rule = "- Ask how many adult guests will be staying in a warm, polite manner (e.g. 'May I know how many adult guests will be staying, sir/ma'am?'). Do not ask for their names."
             elif target_param == "nama tamu":
-                target_rule = "- Ask for the FULL NAME of the guest who will be staying for registration purposes."
+                target_rule = "- Ask for the full name of the guest who will be staying in a professional and polite manner for registration purposes."
             elif target_param == "tanggal check-out":
-                target_rule = "- Ask for the check-out date or how many nights (duration) they plan to stay."
+                target_rule = "- Ask for the check-out date or how many nights they plan to stay in a polite, natural guest-services tone."
             
             target_param_en = {
                 "nama tamu": "guest name",

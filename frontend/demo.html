@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard Demo Hotel AI Chatbot - Simulasi interaksi tamu hotel dengan asisten virtual cerdas berbasis RAG.">
+  <title>Hotel AI Demo - Hotel Demo Metland</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #1A73E8;
+      --primary-gradient: linear-gradient(135deg, #1A73E8 0%, #0D52D6 100%);
+      --bg-app: #F0F2F5;
+      --bg-panel: #FFFFFF;
+      --text-main: #1F2937;
+      --text-muted: #6B7280;
+      --chat-user: #1A73E8;
+      --chat-bot: #FFFFFF;
+      --border-color: #E5E7EB;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+      
+      /* Intent Colors */
+      --intent-faq: #E0F2FE;
+      --intent-faq-text: #0369A1;
+      --intent-booking: #DCFCE7;
+      --intent-booking-text: #15803D;
+      --intent-request: #DCFCE7;
+      --intent-request-text: #166534;
+      --intent-complaint: #FEE2E2;
+      --intent-complaint-text: #B91C1C;
+      --intent-escalate: #FFEDD5;
+      --intent-escalate-text: #C2410C;
+      --intent-unknown: #F3F4F6;
+      --intent-unknown-text: #4B5563;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Layout Wrapper */
+    .app {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--bg-app);
+    }
+
+    /* Kolom Kiri: Chat Panel (60%) */
+    .chat-panel {
+      flex: 6;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-panel);
+      border-right: 1px solid var(--border-color);
+      height: 100%;
+      position: relative;
+    }
+
+    /* Header Chat */
+    .chat-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #FFFFFF;
+      z-index: 10;
+    }
+
+    .hotel-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hotel-icon {
+      font-size: 24px;
+      background-color: #F3F4F6;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hotel-details h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      background: #F9FAFB;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-online { background-color: #10B981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+    .status-offline { background-color: #EF4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+
+    /* Enriched Guest Badge */
+    .guest-enriched-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #DCFCE7;
+      color: #15803D;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+      position: absolute;
+      top: 90px;
+      left: 24px;
+      z-index: 5;
+      box-shadow: var(--shadow-sm);
+      animation: slideInDown 0.3s ease-out;
+    }
+
+    @keyframes slideInDown {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Chat Messages Body */
+    .chat-messages {
+      flex: 1;
+      padding: 85px 24px 24px 24px; /* extra top padding for enriched badge */
+      overflow-y: auto;
+      background-color: #F8FAFC;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    /* Chat Bubbles */
+    .message-row {
+      display: flex;
+      width: 100%;
+      margin-bottom: 2px;
+    }
+
+    .message-row.user-row {
+      justify-content: flex-end;
+    }
+
+    .message-row.bot-row {
+      justify-content: flex-start;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: 12px 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .user-row .bubble {
+      background: var(--primary-gradient);
+      color: #FFFFFF;
+      border-radius: 18px 18px 4px 18px;
+    }
+
+    .bot-row .bubble {
+      background-color: var(--chat-bot);
+      color: var(--text-main);
+      border-radius: 18px 18px 18px 4px;
+      border: 1px solid rgba(229, 231, 233, 0.5);
+    }
+
+    .bot-row .bubble.error-bubble {
+      background-color: #FEF2F2;
+      border: 1px solid #FEE2E2;
+      color: #991B1B;
+      border-radius: 12px;
+    }
+
+    .timestamp {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: block;
+      width: 100%;
+    }
+
+    .user-row .timestamp {
+      text-align: right;
+      padding-right: 4px;
+    }
+
+    .bot-row .timestamp {
+      text-align: left;
+      padding-left: 4px;
+    }
+
+    /* Typing Indicator Animation */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 6px;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      background-color: var(--text-muted);
+      border-radius: 50%;
+      animation: typing-bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typing-bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1.0); }
+    }
+
+    /* Chat Footer / Input */
+    .chat-input-area {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      background-color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .chat-input-area textarea {
+      width: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 12px 20px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      resize: none;
+      height: 46px;
+      line-height: 20px;
+      transition: all 0.2s ease;
+      background-color: #F9FAFB;
+    }
+
+    .chat-input-area textarea:focus {
+      border-color: var(--primary);
+      background-color: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      background: var(--primary-gradient);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px rgba(26, 115, 232, 0.2);
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(26, 115, 232, 0.3);
+    }
+
+    .send-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .send-btn:disabled {
+      background: #CBD5E1;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* Kolom Kanan: Info Panel (40%) */
+    .info-panel {
+      flex: 4;
+      background-color: #F8FAFC;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      border-left: 1px solid var(--border-color);
+    }
+
+    .panel-card {
+      background-color: #FFFFFF;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel-card h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Config Form Control */
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      background-color: #F9FAFB;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--primary);
+      background-color: #FFFFFF;
+    }
+
+    .reset-btn {
+      width: 100%;
+      margin-top: 14px;
+      padding: 11px;
+      background-color: #FFFFFF;
+      color: #EF4444;
+      border: 1px solid #FCA5A5;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .reset-btn:hover {
+      background-color: #FEF2F2;
+      border-color: #EF4444;
+    }
+
+    /* Realtime Info */
+    .debug-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border-color);
+      font-size: 13px;
+    }
+
+    .debug-row:last-child {
+      border-bottom: none;
+    }
+
+    .debug-label {
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .debug-value {
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Intent Badges */
+    .intent-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .intent-faq { background-color: var(--intent-faq); color: var(--intent-faq-text); }
+    .intent-booking_inquiry { background-color: var(--intent-booking); color: var(--intent-booking-text); }
+    .intent-booking_request { background-color: #DCFCE7; color: #166534; }
+    .intent-complaint { background-color: var(--intent-complaint); color: var(--intent-complaint-text); }
+    .intent-escalate { background-color: var(--intent-escalate); color: var(--intent-escalate-text); }
+    .intent-unknown { background-color: var(--intent-unknown); color: var(--intent-unknown-text); }
+
+    /* Confidence Progress Bar */
+    .progress-container {
+      width: 120px;
+      background-color: #E5E7EB;
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+
+    .bar-red { background-color: #EF4444; }
+    .bar-yellow { background-color: #F59E0B; }
+    .bar-green { background-color: #10B981; }
+
+    /* Quick Test Grid */
+    .quick-test-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .quick-test-btn {
+      padding: 10px 12px;
+      background-color: #F8FAFC;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .quick-test-btn:hover {
+      background-color: #EFF6FF;
+      border-color: #BFDBFE;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .info-panel {
+        display: none; /* Hide debug/configuration panel on mobile */
+      }
+      .chat-panel {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <!-- Kolom Kiri: Chat Interface -->
+    <div class="chat-panel" role="main">
+      <div class="chat-header">
+        <div class="hotel-brand">
+          <div class="hotel-icon" aria-hidden="true">🏨</div>
+          <div class="hotel-details">
+            <h1 id="hotelNameTitle">Hotel Demo Metland</h1>
+          </div>
+        </div>
+        <div class="status-badge" id="apiStatusBadge">
+          <span class="status-dot status-offline" id="statusDot" aria-hidden="true"></span>
+          <span id="statusText">Checking...</span>
+        </div>
+      </div>
+      
+      <!-- Enriched badge, hidden by default -->
+      <div class="guest-enriched-badge" id="enrichedBadge" style="display: none;">
+        <span>👤 Tamu teridentifikasi</span>
+      </div>
+
+      <!-- Chat Bubbles Area -->
+      <div class="chat-messages" id="messages" aria-label="Riwayat Obrolan">
+        <!-- Messages generated by JS -->
+      </div>
+      
+      <!-- Input Footer -->
+      <div class="chat-input-area">
+        <div class="input-wrapper">
+          <textarea id="messageInput" placeholder="Ketik pesan..." aria-label="Pesan Anda" rows="1"></textarea>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Kirim Pesan">➔</button>
+      </div>
+    </div>
+    
+    <!-- Kolom Kanan: Info Panel -->
+    <div class="info-panel" role="complementary" aria-label="Panel Info dan Debug">
+      <!-- Section 1: Konfigurasi -->
+      <div class="panel-card">
+        <h2>🛠️ Konfigurasi Demo</h2>
+        <div class="form-group">
+          <label for="hotelSelect">PILIH HOTEL</label>
+          <select id="hotelSelect" onchange="updateHotelSlug()">
+            <option value="demo">demo (Hotel Demo Metland)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="waInput">NOMOR WA SIMULASI</label>
+          <input type="text" id="waInput" value="08123456789" placeholder="Contoh: 08123456789" onchange="updateUserIdentifier()">
+        </div>
+        
+        <div class="form-group">
+          <label for="apiUrlInput">API URL BACKEND</label>
+          <input type="text" id="apiUrlInput" value="http://localhost:8001" placeholder="Contoh: http://localhost:8001" onchange="updateApiUrl()">
+        </div>
+        
+        <button class="reset-btn" onclick="resetConversation()">
+          🔄 Reset Percakapan
+        </button>
+      </div>
+      
+      <!-- Section 2: Info Percakapan (realtime) -->
+      <div class="panel-card">
+        <h2>📊 Info Percakapan (Realtime)</h2>
+        <div class="debug-row">
+          <span class="debug-label">Session ID:</span>
+          <span class="debug-value" id="debugSessionId">-</span>
+        </div>
+        <div class="debug-row">
+          <span class="debug-label">Intent Terdeteksi:</span>
+          <span id="debugIntent"><span class="intent-badge intent-unknown">unknown</span></span>
+        </div>
+        <div class="debug-row">
+          <span class="debug-label">Confidence:</span>
+          <div>
+            <div class="progress-container">
+              <div class="progress-bar bar-red" id="confidenceBar" style="width: 0%"></div>
+            </div>
+            <span class="debug-value" id="debugConfidence">0%</span>
+          </div>
+        </div>
+        <div class="debug-row">
+          <span class="debug-label">Enriched Stay:</span>
+          <span class="debug-value" id="debugEnriched">❌ Tidak</span>
+        </div>
+      </div>
+      
+      <!-- Section 3: Quick Test Buttons -->
+      <div class="panel-card">
+        <h2>⚡ Uji Cepat (Quick Test)</h2>
+        <div class="quick-test-grid">
+          <button class="quick-test-btn" onclick="quickSend('🏊 Jam berapa kolam renang buka?')">🏊 Jam Kolam Renang</button>
+          <button class="quick-test-btn" onclick="quickSend('💰 Berapa harga kamar deluxe?')">💰 Harga Kamar Deluxe</button>
+          <button class="quick-test-btn" onclick="quickSend('📶 Apa password wifi di kamar?')">📶 Password WiFi</button>
+          <button class="quick-test-btn" onclick="quickSend('🛏️ Saya mau booking kamar')">🛏️ Mau Booking</button>
+          <button class="quick-test-btn" onclick="quickSend('❄️ AC kamar saya rusak dan berisik')">❄️ AC Kamar Rusak</button>
+          <button class="quick-test-btn" onclick="quickSend('🙋 Minta handuk tambahan di kamar')">🙋 Minta Handuk</button>
+          <button class="quick-test-btn" onclick="quickSend('👨💼 Saya ingin berbicara dengan staff manusia')">👨💼 Hubungi Staff</button>
+          <button class="quick-test-btn" onclick="quickSend('xyzabc tidak jelas')">❓ Trigger Fallback</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State aplikasi
+    let apiUrl = "http://localhost:8001";
+    let hotelSlug = "demo";
+    let userIdentifier = "08123456789";
+    let sessionId = null;
+    let isLoading = false;
+
+    // Mapping nama hotel
+    const hotelNames = {
+      "demo": "Hotel Demo Metland"
+    };
+
+    // Saat browser selesai memuat dokumen
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Generate user identifier baru secara random
+      resetUserIdentifier();
+      // 2. Cek status server pertama kali
+      checkApiStatus();
+      // 3. Pasang auto-check API status setiap 30 detik
+      setInterval(checkApiStatus, 30000);
+      // 4. Tambah pesan selamat datang di awal
+      showWelcomeMessage();
+      // 5. Pasang listener Enter keyboard
+      setupInputListener();
+    });
+
+    // Helper untuk generate user_identifier acak (demo_XXXXXX)
+    function resetUserIdentifier() {
+      const rand = Math.floor(100000 + Math.random() * 900000);
+      userIdentifier = `demo_${rand}`;
+      document.getElementById("waInput").value = userIdentifier;
+    }
+
+    // Mengambil nilai API URL yang diperbarui
+    function updateApiUrl() {
+      apiUrl = document.getElementById("apiUrlInput").value.trim();
+      checkApiStatus();
+    }
+
+    // Mengambil nilai nomor WA simulasi yang diperbarui
+    function updateUserIdentifier() {
+      userIdentifier = document.getElementById("waInput").value.trim();
+    }
+
+    // Mengambil nilai Slug hotel terpilih dari dropdown
+    function updateHotelSlug() {
+      hotelSlug = document.getElementById("hotelSelect").value;
+      const title = hotelNames[hotelSlug] || "Hotel AI Chatbot";
+      document.getElementById("hotelNameTitle").innerText = title;
+      document.title = `Hotel AI Demo - ${title}`;
+    }
+
+    // Menangani masukan tombol Enter di textarea
+    function setupInputListener() {
+      const input = document.getElementById("messageInput");
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      input.focus();
+    }
+
+    // Mengubah formatting markdown tipis (*bold* & _italic_ & \n) menjadi HTML
+    function formatMessageText(text) {
+      if (!text) return "";
+      let formatted = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+        
+      // Bold Markdown formatting: *text* -> <strong>text</strong>
+      formatted = formatted.replace(/\*(.*?)\*/g, "<strong>$1</strong>");
+      // Italic Markdown formatting: _text_ -> <em>$1</em>
+      formatted = formatted.replace(/_(.*?)_/g, "<em>$1</em>");
+      // Newline -> <br>
+      formatted = formatted.replace(/\n/g, "<br>");
+      return formatted;
+    }
+
+    // Memeriksa status kesehatan REST API server
+    async function checkApiStatus() {
+      const statusDot = document.getElementById("statusDot");
+      const statusText = document.getElementById("statusText");
+      
+      try {
+        const response = await fetch(`${apiUrl}/health`, { method: 'GET' });
+        if (response.ok) {
+          statusDot.className = "status-dot status-online";
+          statusText.innerText = "Online";
+        } else {
+          statusDot.className = "status-dot status-offline";
+          statusText.innerText = "Offline";
+        }
+      } catch (err) {
+        statusDot.className = "status-dot status-offline";
+        statusText.innerText = "Offline";
+      }
+    }
+
+    // Menampilkan bubble pesan ke area chat messages
+    function appendChatBubble(sender, text, isError = false) {
+      const container = document.getElementById("messages");
+      const timeString = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      
+      const messageRow = document.createElement("div");
+      messageRow.className = `message-row ${sender}-row`;
+      
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${isError ? 'error-bubble' : ''}`;
+      
+      if (sender === 'bot') {
+        bubble.innerHTML = formatMessageText(text);
+      } else {
+        bubble.textContent = text;
+      }
+      
+      const timestamp = document.createElement("span");
+      timestamp.className = "timestamp";
+      timestamp.innerText = timeString;
+      
+      bubble.appendChild(timestamp);
+      messageRow.appendChild(bubble);
+      container.appendChild(messageRow);
+      
+      // Auto scroll ke bawah
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Menampilkan Typing Indicator (...)
+    function showTypingIndicator() {
+      const container = document.getElementById("messages");
+      const messageRow = document.createElement("div");
+      messageRow.className = "message-row bot-row";
+      messageRow.id = "typingIndicator";
+      
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      
+      const indicator = document.createElement("div");
+      indicator.className = "typing-indicator";
+      
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement("div");
+        dot.className = "typing-dot";
+        indicator.appendChild(dot);
+      }
+      
+      bubble.appendChild(indicator);
+      messageRow.appendChild(bubble);
+      container.appendChild(messageRow);
+      
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Menghapus Typing Indicator
+    function removeTypingIndicator() {
+      const indicator = document.getElementById("typingIndicator");
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    // Mengirim pesan pengguna ke API Backend
+    async function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const sendBtn = document.getElementById("sendBtn");
+      const text = input.value.trim();
+      
+      if (!text || isLoading) return;
+      
+      // Reset input & disable
+      input.value = "";
+      isLoading = true;
+      input.disabled = true;
+      sendBtn.disabled = true;
+      
+      // 1. Tampilkan pesan user ke chat
+      appendChatBubble("user", text);
+      
+      // 2. Tampilkan typing indicator
+      showTypingIndicator();
+      
+      try {
+        const response = await fetch(`${apiUrl}/api/v1/chat`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: text,
+            user_identifier: userIdentifier,
+            channel: "web",
+            hotel_slug: hotelSlug
+          })
+        });
+        
+        removeTypingIndicator();
+        
+        if (response.ok) {
+          const data = await response.json();
+          // 3. Tampilkan respon bot
+          appendChatBubble("bot", data.response);
+          // 4. Update panel debug realtime
+          updateDebugInfo(data);
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = errData.detail || "Gagal memproses permintaan server.";
+          appendChatBubble("bot", `⚠️ Error: ${errMsg}`, true);
+        }
+      } catch (err) {
+        removeTypingIndicator();
+        appendChatBubble("bot", `⚠️ Tidak dapat terhubung ke server backend. Pastikan server backend Anda berjalan di ${apiUrl} dan opsi CORS diaktifkan.`, true);
+      } finally {
+        isLoading = false;
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    // Melakukan pengisian input otomatis dan trigger kirim (untuk quick test)
+    function quickSend(text) {
+      if (isLoading) return;
+      document.getElementById("messageInput").value = text;
+      sendMessage();
+    }
+
+    // Memperbarui panel debug sebelah kanan
+    function updateDebugInfo(data) {
+      sessionId = data.session_id;
+      
+      // Update session_id
+      document.getElementById("debugSessionId").innerText = data.session_id ? data.session_id.substring(0, 8) + '...' : '-';
+      
+      // Update Intent Badge
+      const intent = data.intent || "unknown";
+      const intentLabel = document.getElementById("debugIntent");
+      intentLabel.innerHTML = `<span class="intent-badge intent-${intent}">${intent}</span>`;
+      
+      // Update Confidence Bar
+      const confidence = Math.round((data.confidence || 0) * 100);
+      document.getElementById("debugConfidence").innerText = `${confidence}%`;
+      
+      const bar = document.getElementById("confidenceBar");
+      bar.style.width = `${confidence}%`;
+      
+      if (confidence < 60) {
+        bar.className = "progress-bar bar-red";
+      } else if (confidence < 85) {
+        bar.className = "progress-bar bar-yellow";
+      } else {
+        bar.className = "progress-bar bar-green";
+      }
+      
+      // Update Enriched Stay Status
+      const enrichedText = document.getElementById("debugEnriched");
+      const enrichedBadge = document.getElementById("enrichedBadge");
+      
+      if (data.is_enriched) {
+        enrichedText.innerText = "✅ Ya (Tamu Teridentifikasi)";
+        enrichedBadge.style.display = "inline-flex";
+      } else {
+        enrichedText.innerText = "❌ Tidak";
+        enrichedBadge.style.display = "none";
+      }
+    }
+
+    // Menampilkan pesan welcome awal dari chatbot
+    function showWelcomeMessage() {
+      const title = hotelNames[hotelSlug] || "Hotel AI Chatbot";
+      appendChatBubble("bot", `Halo! Selamat datang di *${title}*. Ada yang bisa kami bantu? 😊`);
+    }
+
+    // Mereset sesi percakapan & membersihkan seluruh riwayat chat
+    function resetConversation() {
+      if (isLoading) return;
+      
+      // Clear messages
+      document.getElementById("messages").innerHTML = "";
+      
+      // Generate user identifier baru
+      resetUserIdentifier();
+      
+      // Reset debug panel
+      document.getElementById("debugSessionId").innerText = "-";
+      document.getElementById("debugIntent").innerHTML = `<span class="intent-badge intent-unknown">unknown</span>`;
+      document.getElementById("debugConfidence").innerText = "0%";
+      document.getElementById("confidenceBar").style.width = "0%";
+      document.getElementById("debugEnriched").innerText = "❌ Tidak";
+      document.getElementById("enrichedBadge").style.display = "none";
+      
+      // Tampilkan welcome message baru
+      showWelcomeMessage();
+      
+      document.getElementById("messageInput").focus();
+    }
+  </script>
+</body>
+</html>
