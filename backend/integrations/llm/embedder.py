@@ -50,7 +50,8 @@ class TextEmbedder:
             list[float]: Vektor embedding dari teks input berdimensi 768.
         """
         if self.use_mock:
-            return [0.0] * 768
+            # Menggunakan vektor non-nol untuk menghindari pembagian dengan nol pada cosine distance di pgvector
+            return [0.1] * 768
             
         prefixed = f"query: {text}"
         try:
@@ -80,7 +81,8 @@ class TextEmbedder:
             list[float]: Vektor embedding dari teks input berdimensi 768.
         """
         if self.use_mock:
-            return [0.0] * 768
+            # Menggunakan vektor non-nol untuk menghindari pembagian dengan nol pada cosine distance di pgvector
+            return [0.1] * 768
             
         prefixed = f"passage: {text}"
         try:
@@ -117,7 +119,8 @@ class TextEmbedder:
             list[list[float]]: Kumpulan vektor embedding berdimensi 768 yang diurutkan sesuai urutan input.
         """
         if self.use_mock:
-            return [[0.0] * 768 for _ in texts]
+            # Menggunakan vektor non-nol untuk menghindari pembagian dengan nol pada cosine distance di pgvector
+            return [[0.1] * 768 for _ in texts]
             
         prefix = "passage: " if is_passage else "query: "
         prefixed = [f"{prefix}{t}" for t in texts]

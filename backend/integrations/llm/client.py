@@ -45,6 +45,8 @@ class LLMClient:
         self.api_base = api_base.rstrip("/")
         self.model_name = os.getenv("LLM_MODEL_NAME") or os.getenv("MODEL_NAME", "hotel-llm")
         self.api_key = os.getenv("LLM_API_KEY")
+        # Membaca konfigurasi untuk menyalakan/mematikan thinking mode (default: False)
+        self.enable_thinking = os.getenv("LLM_ENABLE_THINKING", "false").lower() == "true"
         # Menggunakan satu instance client untuk menggunakan kembali koneksi TCP (Connection Pool)
         self.client = httpx.Client(timeout=30.0)
 
@@ -73,9 +75,9 @@ class LLMClient:
                 {"role": "user", "content": prompt}
             ],
             "temperature": 0.0,
-            # Menambahkan parameter untuk menonaktifkan thinking pada model vLLM (seperti Qwen)
+            # Menambahkan parameter untuk mengaktifkan/menonaktifkan thinking pada model vLLM (seperti Qwen)
             "chat_template_kwargs": {
-                "enable_thinking": False
+                "enable_thinking": self.enable_thinking
             }
         }
 

@@ -323,6 +323,8 @@ class BookingFormCollector:
         extracted = {}
         try:
             clean = response.strip()
+            # Hapus tag <think>...</think> beserta isinya jika model menghasilkan proses berpikir
+            clean = re.sub(r'<think>.*?</think>', '', clean, flags=re.DOTALL).strip()
             if clean.startswith("```"):
                 clean = clean.split("```")[1]
                 if clean.startswith("json"):
@@ -756,8 +758,8 @@ class BookingFormCollector:
         )
         day_matches = list(re.finditer(day_pattern, msg_lower))
         for m in day_matches:
-            # Pastikan tidak tumpang tindih dengan pencocokan hari + bulan
-            overlap = any(dm.start() <= m.start() <= dm.end() for dm in matches)
+            # Pastikan tidak tumpang tindih dengan pencocokan hari + bulan (menggunakan interseksi interval)
+            overlap = any(m.start() < dm.end() and dm.start() < m.end() for dm in matches)
             if overlap:
                 continue
             day_name = m.group(1)
@@ -779,8 +781,8 @@ class BookingFormCollector:
         # 3. Deteksi format angka hari saja (misal "tanggal 20")
         day_only_matches = re.finditer(r'\b(?:tanggal|tgl)\s*(\d{1,2})\b', msg_lower)
         for m in day_only_matches:
-            # Lewati jika tumpang tindih dengan pencocokan hari + bulan
-            overlap = any(dm.start() <= m.start() <= dm.end() for dm in matches)
+            # Lewati jika tumpang tindih dengan pencocokan hari + bulan (menggunakan interseksi interval)
+            overlap = any(m.start() < dm.end() and dm.start() < m.end() for dm in matches)
             if overlap:
                 continue
             day_val = int(m.group(1))
@@ -815,6 +817,28 @@ class BookingFormCollector:
         Return:
             tuple[str | None, str | None]: Tuple berisi (tanggal_check_in, tanggal_check_out).
         """
+        msg_lower = message.lower()
+
+        # Deteksi "weekend" atau "akhir pekan" secara khusus
+        if "weekend" in msg_lower or "akhir pekan" in msg_lower:
+            is_next = "depan" in msg_lower or "berikutnya" in msg_lower
+            today = datetime.now()
+            today_weekday = today.weekday()
+
+            # Tentukan hari Sabtu terdekat
+            if today_weekday == 6:  # Hari Minggu
+                saturday = today - timedelta(days=1)
+                sunday = today
+            else:
+                saturday = today + timedelta(days=(5 - today_weekday))
+                sunday = saturday + timedelta(days=1)
+
+            if is_next:
+                saturday += timedelta(days=7)
+                sunday += timedelta(days=7)
+
+            return saturday.strftime("%Y-%m-%d"), sunday.strftime("%Y-%m-%d")
+
         occurrences = self._extract_dates_programmatic(message)
         if not occurrences:
             return None, None
