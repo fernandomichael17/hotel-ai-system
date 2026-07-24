@@ -21,20 +21,19 @@ async def seed_dev_data():
         existing = result.scalar_one_or_none()
         
         if existing:
-            print("Dummy hotel sudah ada, skip")
-            return
-        
-        # Insert dummy hotel
-        hotel = Hotel(
-            id=UUID(DUMMY_HOTEL_ID),
-            name="Hotel Demo Metland",
-            slug="demo",
-            waha_session="demo",
-            is_active=True
-        )
-        db.add(hotel)
-        await db.commit()
-        print(f"Dummy hotel created: {hotel.name}")
+            print("Dummy hotel sudah ada, skip hotel insertion")
+        else:
+            # Insert dummy hotel
+            hotel = Hotel(
+                id=UUID(DUMMY_HOTEL_ID),
+                name="Hotel Demo Metland",
+                slug="demo",
+                waha_session="demo",
+                is_active=True
+            )
+            db.add(hotel)
+            await db.commit()
+            print(f"Dummy hotel created: {hotel.name}")
         
         # Insert default policies untuk hotel dummy
         from backend.db.models import HotelPolicy

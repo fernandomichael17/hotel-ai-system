@@ -111,6 +111,8 @@ ATURAN KOMUNIKASI FRONT OFFICE:
 - JANGAN ulangi sapaan selamat pagi/siang/sore jika sudah ada riwayat percakapan sebelumnya, cukup gunakan sapaan personal seperti "Bapak/Ibu" atau "Kak".
 - {no_greeting_rule}
 {target_rule}
+- DILARANG mengasumsikan, menyebutkan, atau mengarang angka durasi menginap (seperti "2 malam" atau jumlah hari) jika data durasi/check-out belum ada di parameter.
+- DILARANG mengasumsikan, menyebutkan, atau mengarang jumlah tamu (seperti "2 orang dewasa" atau jumlah orang) jika data jumlah tamu belum ada di parameter.
 - DILARANG membuat asumsi status booking. Jangan katakan "kamar sudah disiapkan", "booking sedang diproses", atau kalimat sejenisnya sebelum tamu mengkonfirmasi ringkasan pemesanan. Tugas utama Anda saat ini hanya mengumpulkan data yang masih kurang dengan sopan.
 - Gunakan bahasa yang sesuai dengan bahasa percakapan tamu saat ini (Bahasa Indonesia atau English).
 
@@ -232,6 +234,7 @@ class BookingFormCollector:
         """
         priority_fields = [
             ("check_in_date", "tanggal check-in"),
+            ("check_out_date", "tanggal check-out"),
             ("room_type", "tipe kamar"),
             ("num_guests", "jumlah tamu dewasa"),
             ("guest_name", "nama tamu"),
@@ -273,7 +276,8 @@ class BookingFormCollector:
             "booking", "reservasi", "pesan", "kamar", "room", "tipe", "standard", "deluxe", "suite",
             "malam", "hari", "day", "night", "stay", "menginap", "selama", "sehari", "semalam",
             "orang", "tamu", "dewasa", "anak", "seorang", "sendiri", "berdua", "bertiga",
-            "untuk", "tanggal", "tgl", "pada", "di", "ke", "dari", "bukan"
+            "untuk", "tanggal", "tgl", "pada", "di", "ke", "dari", "bukan",
+            "besok", "lusa", "kemarin", "nanti", "sekarang"
         }
         has_forbidden_word = any(w in forbidden_words for w in name_lower.split())
 
@@ -447,16 +451,18 @@ class BookingFormCollector:
                 for m in digits:
                     digit_pos = m.start()
                     
-                    # Cek apakah angka ini diikuti oleh nama bulan (artinya ini tanggal, bukan jumlah tamu)
+                    # Cek apakah angka ini diikuti oleh nama bulan atau kata durasi/waktu (artinya ini tanggal/durasi, bukan jumlah tamu)
                     after = msg_lower[m.end():].strip().split()
                     next_word = after[0] if after else ""
-                    month_names = {
+                    non_guest_next_words = {
                         "januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus",
                         "september", "oktober", "november", "desember", "jan", "feb", "mar", "apr",
                         "may", "jun", "jul", "agu", "aug", "sep", "okt", "oct", "nov", "des",
-                        "january", "february", "march", "june", "july", "august", "december"
+                        "january", "february", "march", "june", "july", "august", "december",
+                        "malam", "night", "nights", "hari", "day", "days", "jam", "hour", "hours",
+                        "minggu", "week", "weeks", "bulan", "month", "months", "tahun", "year", "years"
                     }
-                    if next_word in month_names:
+                    if next_word in non_guest_next_words:
                         continue
 
                     before = msg_lower[:digit_pos].strip().split()
@@ -628,7 +634,7 @@ class BookingFormCollector:
             elif target_param == "nama tamu":
                 target_rule = "- Tanyakan nama lengkap tamu untuk keperluan registrasi kamar secara sopan (misal: 'Mohon dibantu atas nama siapa reservasi ini didaftarkan?')."
             elif target_param == "tanggal check-out":
-                target_rule = "- Tanyakan rencana check-out atau jumlah malam (durasi stay) menginap tamu secara natural (misal: 'Boleh kami tahu rencana menginapnya untuk berapa malam Bapak/Ibu/Kak?')."
+                target_rule = "- Tanyakan berapa malam (durasi menginap) tamu berencana menginap secara hangat dan sopan (misal: 'Boleh kami tahu rencana menginapnya untuk berapa malam Bapak/Ibu/Kak?'). DILARANG sebutkan angka malam tertentu jika belum ada di data."
             target = target_param
             empty_val_label = "Belum ada"
         else:
@@ -641,7 +647,7 @@ class BookingFormCollector:
             elif target_param == "nama tamu":
                 target_rule = "- Ask for the full name of the guest who will be staying in a professional and polite manner for registration purposes."
             elif target_param == "tanggal check-out":
-                target_rule = "- Ask for the check-out date or how many nights they plan to stay in a polite, natural guest-services tone."
+                target_rule = "- Ask how many nights they plan to stay in a polite, natural guest-services tone. DO NOT state any specific number of nights if the guest has not specified it yet."
             
             target_param_en = {
                 "nama tamu": "guest name",

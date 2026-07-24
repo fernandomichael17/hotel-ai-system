@@ -13,7 +13,10 @@ class IntentType(str, Enum):
     COMPLAINT = "complaint"
     CANCELLATION = "cancellation"
     REFUND = "refund"
+    REFUND_INQUIRY = "refund_inquiry"
     RESCHEDULE = "reschedule"
+    AMENITIES = "amenities"
+    ESCALATE = "escalate"
     UNKNOWN = "unknown"
 
 @dataclass

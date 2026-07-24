@@ -46,6 +46,7 @@ class IntentClassifier:
         # Konversi spasi ke underscore jika model menghasilkan format tanpa underscore
         cleaned_response = cleaned_response.replace("booking inquiry", "booking_inquiry")
         cleaned_response = cleaned_response.replace("booking request", "booking_request")
+        cleaned_response = cleaned_response.replace("refund inquiry", "refund_inquiry")
 
         # Bersihkan tanda baca, tanda kurung, dan karakter markdown
         for char in [".", ",", '"', "'", "`", "-", ">", "*", ":", "(", ")", "[", "]"]:

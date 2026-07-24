@@ -6,8 +6,8 @@ from backend.core.response.templates import (
 
 CONFIDENCE_THRESHOLD = 0.6
 ESCALATE_KEYWORDS = [
-    "staff", "cs", "operator", "front office", "fo",
-    "human", "bantuan langsung", "bicara langsung", "hubungi langsung"
+    "staff", "cs", "customer service", "operator", "front office", "fo",
+    "human", "bantuan langsung", "bicara langsung", "hubungi langsung", "admin"
 ]
 
 class FallbackHandler:

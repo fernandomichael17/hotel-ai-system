@@ -38,6 +38,48 @@ class TextEmbedder:
                 logger.info("TextEmbedder diinisialisasi menggunakan Mock Embedder (768 dimensi).")
         return cls._instance
 
+    def _mock_vector(self, text: str) -> list[float]:
+        """
+        Menghasilkan vektor 768-dimensi berbasis hash deterministik dan pemetaan kata kunci untuk mode mock.
+
+        Parameter:
+            text (str): Teks kueri atau passage.
+
+        Return:
+            list[float]: Vektor 768-dimensi ter-normalisasi L2.
+        """
+        import math
+        import hashlib
+        
+        h = hashlib.md5(text.lower().encode('utf-8')).hexdigest()
+        seed = int(h[:8], 16)
+        vec = [(0.05 + ((seed * (i + 1) * 31) % 100) / 1000.0) for i in range(768)]
+        
+        keyword_dim_map = {
+            "deluxe": 10, "suite": 11, "standard": 12, "harga": 13, "kamar": 14, "850": 15,
+            "kolam": 20, "renang": 21, "06.00": 22, "22.00": 23, "wifi": 30,
+            "gratis": 31, "hewan": 40, "peliharaan": 41, "check-in": 50, "14.00": 51,
+            "check-out": 60, "12.00": 61, "sarapan": 70, "gym": 80, "fitness": 81,
+            "ballroom": 90, "500": 91, "kapasitas": 92, "cancellation": 100, "cancel": 101, "denda": 102,
+            "refund": 110, "7": 111, "14": 112, "parkir": 120, "smoking": 130, "rokok": 131,
+            "antar": 140, "jemput": 141, "bandara": 142, "tamu": 150, "tambahan": 151, "100.000": 152,
+            "late": 160, "dekorasi": 170, "350.000": 171, "jakarta": 180, "monas": 181,
+            "lokasi": 182, "meeting": 190
+        }
+        
+        words = text.lower().split()
+        for w in words:
+            w_clean = w.strip(".,!?\"'()")
+            if w_clean in keyword_dim_map:
+                dim_idx = keyword_dim_map[w_clean]
+                vec[dim_idx] += 2.0
+                
+        norm = math.sqrt(sum(x * x for x in vec))
+        if norm > 0:
+            vec = [x / norm for x in vec]
+            
+        return vec
+
     def embed(self, text: str) -> list[float]:
         """
         Mengonversi kueri teks pengguna ke bentuk embedding.
@@ -50,8 +92,7 @@ class TextEmbedder:
             list[float]: Vektor embedding dari teks input berdimensi 768.
         """
         if self.use_mock:
-            # Menggunakan vektor non-nol untuk menghindari pembagian dengan nol pada cosine distance di pgvector
-            return [0.1] * 768
+            return self._mock_vector(text)
             
         prefixed = f"query: {text}"
         try:
@@ -81,8 +122,7 @@ class TextEmbedder:
             list[float]: Vektor embedding dari teks input berdimensi 768.
         """
         if self.use_mock:
-            # Menggunakan vektor non-nol untuk menghindari pembagian dengan nol pada cosine distance di pgvector
-            return [0.1] * 768
+            return self._mock_vector(text)
             
         prefixed = f"passage: {text}"
         try:
@@ -119,8 +159,7 @@ class TextEmbedder:
             list[list[float]]: Kumpulan vektor embedding berdimensi 768 yang diurutkan sesuai urutan input.
         """
         if self.use_mock:
-            # Menggunakan vektor non-nol untuk menghindari pembagian dengan nol pada cosine distance di pgvector
-            return [[0.1] * 768 for _ in texts]
+            return [self._mock_vector(t) for t in texts]
             
         prefix = "passage: " if is_passage else "query: "
         prefixed = [f"{prefix}{t}" for t in texts]

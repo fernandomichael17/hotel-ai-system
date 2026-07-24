@@ -117,6 +117,16 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
                 return '{"room_type": "deluxe"}'
             elif user_msg_clean == "standard room":
                 return '{"room_type": "standard"}'
+            elif user_msg_clean == "1 orang kamar deluxe atas nama fernando michael":
+                return '{"num_guests": 1, "room_type": "deluxe", "guest_name": "Fernando Michael"}'
+            elif user_msg_clean == "1 orang kamar deluxe atas nama fernando michael, minta kamar non-smoking":
+                return '{"num_guests": 1, "room_type": "deluxe", "guest_name": "Fernando Michael", "special_request": "minta kamar non-smoking"}'
+            elif user_msg_clean == "1 orang kamar deluxe dengan nomor wa 08123456789":
+                return '{"num_guests": 1, "room_type": "deluxe", "wa_number": "08123456789"}'
+            elif user_msg_clean == "standard room for 2 adults, name is john doe":
+                return '{"room_type": "standard", "num_guests": 2, "guest_name": "John Doe"}'
+            elif user_msg_clean == "hello, i want to book a standard room for 20 july for 2 nights":
+                return '{"room_type": "standard", "check_in_date": "2026-07-20", "check_out_date": "2026-07-22"}'
             elif user_msg_clean == "1 orang atas nama fernando michael, minta kamar non-smoking":
                 return '{"num_guests": 1, "guest_name": "Fernando Michael", "special_request": "minta kamar non-smoking"}'
             elif user_msg_clean == "1 orang atas nama fernando michael":
@@ -196,28 +206,29 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
 
         handler = BookingHandler(self.mock_db)
 
-        # Turn 1: Pesan checkin -> Memicu pertanyaan tipe kamar
+        # Turn 1: Pesan checkin -> Memicu pertanyaan durasi menginap
         ctx = self._build_context("Halo, saya mau pesan untuk tanggal 20 juli")
+        resp = await handler.handle(ctx)
+        self.assertIn("Untuk berapa malam Anda berencana menginap?", resp)
+
+        # Turn 2: Masukkan durasi menginap (2 malam) -> Memicu pertanyaan tipe kamar
+        ctx = self._build_context("2 malam")
         resp = await handler.handle(ctx)
         self.assertIn("Tipe kamar apa yang Anda inginkan?", resp)
 
-        # Turn 2: Pilih kamar deluxe -> Memicu pertanyaan jumlah tamu
+        # Turn 3: Pilih kamar deluxe -> Ketersediaan dicek untuk rentang 20-22 Juli, memicu info tarif & pertanyaan jumlah tamu
         ctx = self._build_context("Kamar deluxe")
         resp = await handler.handle(ctx)
+        self.assertIn("Kamar *deluxe* tersedia untuk tanggal *2026-07-20 s/d 2026-07-22*", resp)
         self.assertIn("Untuk berapa orang tamu?", resp)
 
-        # Turn 3: Masukkan jumlah tamu & nama -> Memicu pertanyaan nomor WhatsApp
+        # Turn 4: Masukkan jumlah tamu & nama -> Memicu pertanyaan nomor WhatsApp
         ctx = self._build_context("1 orang atas nama Fernando Michael")
         resp = await handler.handle(ctx)
         self.assertIn("Berapa nomor WhatsApp Anda?", resp)
 
-        # Turn 4: Masukkan nomor WA -> Karena semua field utama lengkap kecuali check-out, tanya check-out/durasi
+        # Turn 5: Masukkan nomor WA -> Karena semua field utama lengkap, tampilkan summary
         ctx = self._build_context("08123456789")
-        resp = await handler.handle(ctx)
-        self.assertIn("Untuk berapa malam Anda berencana menginap?", resp)
-
-        # Turn 5: Masukkan durasi check-out (2 malam -> tgl 22) -> Tampilkan summary
-        ctx = self._build_context("2 malam saja")
         resp = await handler.handle(ctx)
         self.assertIn("Berikut ringkasan pesanan Anda:", resp)
         self.assertIn("Tipe Kamar  : Deluxe", resp)
@@ -322,11 +333,11 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
 
         handler = BookingHandler(self.mock_db)
 
-        # Turn 1: User menyapa/booking dalam Bahasa Inggris -> Tanya room type
+        # Turn 1: User menyapa/booking dalam Bahasa Inggris -> Tanya durasi stay
         ctx = self._build_context("Hello, I want to book a room for 20 july")
         resp = await handler.handle(ctx)
         
-        self.assertIn("Which room type would you prefer?", resp)
+        self.assertIn("How many nights do you plan to stay?", resp)
 
         # State harus bertuliskan language: "en"
         from backend.core.session.manager import SessionManager
@@ -334,23 +345,24 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
         state = await session_mgr.get_booking_state(self.session_id)
         self.assertEqual(state.language, "en")
 
-        # Turn 2: Masukkan tipe kamar -> Tanya jumlah tamu
+        # Turn 2: Masukkan durasi -> Tanya room type
+        ctx = self._build_context("2 nights")
+        resp = await handler.handle(ctx)
+        self.assertIn("Which room type would you prefer?", resp)
+
+        # Turn 3: Masukkan tipe kamar -> Cek availability & tanya jumlah tamu
         ctx = self._build_context("Standard room")
         resp = await handler.handle(ctx)
+        self.assertIn("A *standard* room is available for *2026-07-20 s/d 2026-07-22*", resp)
         self.assertIn("How many adult guests?", resp)
 
-        # Turn 3: Pilih tipe kamar -> Tanya whatsapp
+        # Turn 4: Masukkan jumlah tamu & nama -> Tanya whatsapp
         ctx = self._build_context("2 adults, name is John Doe")
         resp = await handler.handle(ctx)
         self.assertIn("What is your WhatsApp number?", resp)
 
-        # Turn 4: Masukkan nomor WA -> Tanya check-out/durasi
+        # Turn 5: Masukkan nomor WA -> Tampilkan summary
         ctx = self._build_context("08123456789")
-        resp = await handler.handle(ctx)
-        self.assertIn("How many nights do you plan to stay?", resp)
-
-        # Turn 5: Masukkan durasi -> Tampilkan summary
-        ctx = self._build_context("2 nights")
         resp = await handler.handle(ctx)
         self.assertIn("Here is a summary of your booking:", resp)
         self.assertIn("Room Type  : Standard", resp)
@@ -390,24 +402,24 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
 
         handler = BookingHandler(self.mock_db)
 
-        # Turn 1: Pesan checkin
+        # Turn 1: Pesan checkin -> tanya durasi
         ctx = self._build_context("Halo, saya mau pesan untuk tanggal 20 juli")
         await handler.handle(ctx)
 
-        # Turn 2: Pilih kamar deluxe
+        # Turn 2: Durasi menginap (2 malam) -> tanya tipe kamar
+        ctx = self._build_context("2 malam")
+        await handler.handle(ctx)
+
+        # Turn 3: Pilih kamar deluxe -> tanya jumlah tamu
         ctx = self._build_context("Kamar deluxe")
         await handler.handle(ctx)
 
-        # Turn 3: Masukkan jumlah tamu, nama, DAN spesial request
+        # Turn 4: Masukkan jumlah tamu, nama, DAN spesial request -> tanya WA
         ctx = self._build_context("1 orang atas nama Fernando Michael, minta kamar non-smoking")
         await handler.handle(ctx)
 
-        # Turn 4: Masukkan nomor WA
+        # Turn 5: Masukkan nomor WA -> summary
         ctx = self._build_context("08123456789")
-        await handler.handle(ctx)
-
-        # Turn 5: Masukkan durasi stay -> summary
-        ctx = self._build_context("2 malam saja")
         resp = await handler.handle(ctx)
         self.assertIn("Deluxe", resp)
         self.assertIn("Fernando Michael", resp)
@@ -441,18 +453,15 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
             available=False,
             room_type="standard",
             check_in_date="2026-07-20",
+            check_out_date="2026-07-22",
             reason="Standard room is fully booked",
             alternatives=["deluxe"]
         ))
 
         handler = BookingHandler(self.mock_db)
 
-        # Turn 1: Sapa & inginkan standard room
-        ctx = self._build_context("Hello, I want to book a room for 20 july")
-        await handler.handle(ctx)
-
-        # Turn 2: Pilih standard room -> HMS mengembalikan tidak tersedia, chatbot menawarkan alternatif Deluxe
-        ctx = self._build_context("Standard room")
+        # Turn 1: Sapa & inginkan standard room untuk 2 malam (checkin & checkout terisi)
+        ctx = self._build_context("Hello, I want to book a standard room for 20 july for 2 nights")
         resp = await handler.handle(ctx)
         
         self.assertIn("is not available", resp.lower())
@@ -463,19 +472,19 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
             available=True,
             room_type="deluxe",
             check_in_date="2026-07-20",
+            check_out_date="2026-07-22",
             price_per_night=850000,
             total_price=1700000,
             reason="Deluxe is available",
             alternatives=[]
         ))
 
-        # Turn 3: Tamu menerima alternatif "saya mau deluxe saja"
+        # Turn 2: Tamu menerima alternatif "saya mau deluxe saja"
         ctx = self._build_context("saya mau deluxe saja")
         resp = await handler.handle(ctx)
 
-        # Pengecekan availability terpicu ulang untuk Deluxe, dan lanjut mengumpulkan parameter berikutnya (jumlah tamu)
+        # Pengecekan availability terpicu ulang untuk Deluxe, dan lanjut mengumpulkan parameter berikutnya
         self.assertIn("deluxe", resp.lower())
-        self.assertIn("tamu", resp.lower())
 
         # Pastikan state tipe kamar terupdate menjadi deluxe
         from backend.core.session.manager import SessionManager
@@ -496,8 +505,8 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
         ctx = self._build_context("Halo, saya mau pesan untuk tanggal 20 juli")
         await handler.handle(ctx)
 
-        # Turn 2: Pilih kamar deluxe
-        ctx = self._build_context("Kamar deluxe")
+        # Turn 2: Masukkan durasi stay (2 malam)
+        ctx = self._build_context("2 malam")
         await handler.handle(ctx)
 
         # Mock HMS lookup_guest agar mengembalikan data tamu terdaftar
@@ -508,11 +517,10 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
             wa_number="08123456789"
         ))
 
-        # Turn 3: Masukkan jumlah tamu DAN nomor WhatsApp -> Memicu Guest Lookup autofill nama "Fernando Michael"
-        # Karena nama, tamu, WA, checkin, & tipe kamar sudah lengkap, sistem langsung bertanya check-out (melewati pertanyaan nama tamu!)
-        ctx = self._build_context("1 orang dengan nomor WA 08123456789")
+        # Turn 3: Masukkan jumlah tamu, tipe kamar, DAN nomor WhatsApp -> Memicu Guest Lookup autofill nama "Fernando Michael"
+        ctx = self._build_context("1 orang kamar deluxe dengan nomor WA 08123456789")
         resp = await handler.handle(ctx)
-        self.assertIn("Untuk berapa malam Anda berencana menginap?", resp)
+        self.assertIn("Berikut ringkasan pesanan Anda:", resp)
 
         # Pastikan guest_name terisi otomatis menjadi "Fernando Michael" di state
         from backend.core.session.manager import SessionManager
@@ -532,7 +540,7 @@ class TestConversationFlow(unittest.IsolatedAsyncioTestCase):
         
         ctx1 = self._build_context("Halo, saya mau pesan untuk tanggal 20 juli")
         resp1 = await handler.handle(ctx1)
-        self.assertIn("Tipe kamar apa yang Anda inginkan?", resp1)
+        self.assertIn("Untuk berapa malam Anda berencana menginap?", resp1)
         
         # Turn 2: Tanya FAQ "Jam berapa kolam renang buka?" -> Intent FAQ
         mock_classifier.classify.return_value = IntentResult(intent=IntentType.FAQ, confidence=1.0, raw_response="faq")

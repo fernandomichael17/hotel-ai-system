@@ -248,7 +248,56 @@ class BookingHandler:
             state = BookingState()
             response = await self._handle_inquiry(ctx, state, session_mgr)
 
+        await self._sync_booking_draft_to_db(ctx, state)
         return response
+
+    async def _sync_booking_draft_to_db(
+        self,
+        ctx: ConversationContext,
+        state: BookingState
+    ) -> None:
+        """
+        Sinkronkan BookingState ke database (tabel booking_drafts) agar dapat diakses secara persistent lintas-proses.
+
+        Parameter:
+            ctx (ConversationContext): Konteks percakapan saat ini.
+            state (BookingState): State booking aktif.
+        """
+        try:
+            from uuid import UUID
+            from backend.db.models import Session as DBSession
+            from sqlalchemy import select
+            
+            sess_uuid = UUID(ctx.session_id)
+            result = await self.db.execute(
+                select(DBSession).where(DBSession.id == sess_uuid)
+            )
+            db_sess = result.scalar_one_or_none()
+            if not db_sess:
+                return
+
+            draft = await self.booking_repo.find_active_draft(sess_uuid)
+            params = state.params
+            draft_data = {
+                "guest_name": params.guest_name,
+                "wa_number": params.wa_number,
+                "check_in_date": params.check_in_date,
+                "check_out_date": params.check_out_date,
+                "room_type": params.room_type,
+                "num_guests": params.num_guests,
+                "special_request": params.special_request,
+                "status": "draft"
+            }
+            if draft:
+                await self.booking_repo.update_params(draft.id, **draft_data)
+            else:
+                await self.booking_repo.create(
+                    hotel_id=db_sess.hotel_id,
+                    session_id=sess_uuid,
+                    **draft_data
+                )
+        except Exception as e:
+            logger.warning(f"Gagal mensinkronkan booking draft ke DB: {e}")
 
     async def _handle_inquiry(
         self,
@@ -271,8 +320,8 @@ class BookingHandler:
             current_state=state
         )
 
-        # Kalau cukup info untuk cek availability
-        if state.params.room_type and state.params.check_in_date:
+        # Kalau cukup info untuk cek availability (butuh room_type, check_in_date, dan check_out_date)
+        if state.params.room_type and state.params.check_in_date and state.params.check_out_date:
             return await self._check_and_respond(ctx, state, session_mgr)
 
         # Belum cukup → collect dulu
@@ -332,8 +381,8 @@ class BookingHandler:
             if getattr(state.params, f) != old_params.get(f) and getattr(state.params, f) is not None:
                 state.availability_checked = False
 
-        # Kalau bisa cek availability sekarang
-        if state.params.room_type and state.params.check_in_date and not state.availability_checked:
+        # Kalau bisa cek availability sekarang (butuh room_type, check_in_date, dan check_out_date)
+        if state.params.room_type and state.params.check_in_date and state.params.check_out_date and not state.availability_checked:
             return await self._check_and_respond(ctx, state, session_mgr)
 
         # Kalau semua required sudah ada
@@ -548,6 +597,10 @@ class BookingHandler:
         }
 
         lang = state.language
+        date_range_str = state.params.check_in_date
+        if state.params.check_out_date:
+            date_range_str = f"{state.params.check_in_date} s/d {state.params.check_out_date}"
+
         if not availability.available:
             # Kamar tidak tersedia
             state.step = BookingStep.COLLECTING
@@ -555,14 +608,14 @@ class BookingHandler:
 
             alt_text = ""
             if availability.alternatives:
-                alts = ", ".join(availability.alternatives)
+                alts = ", ".join([a.title() for a in availability.alternatives])
                 alt_tpl = self._get_string("alternatives_text", lang)
                 alt_text = alt_tpl.format(alts=alts)
 
             room_unavail_tpl = self._get_string("room_unavailable", lang)
             return room_unavail_tpl.format(
                 room_type=state.params.room_type,
-                check_in=state.params.check_in_date
+                check_in=date_range_str
             ) + alt_text
 
         # Kamar tersedia
@@ -586,7 +639,7 @@ class BookingHandler:
         avail_tpl = self._get_string("room_available", lang)
         response = avail_tpl.format(
             room_type=state.params.room_type,
-            check_in=state.params.check_in_date
+            check_in=date_range_str
         ) + f"{price_text}\n\n"
 
         if state.params.is_complete():

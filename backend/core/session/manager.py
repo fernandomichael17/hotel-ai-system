@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,7 @@ class SessionManager:
     """Manajer sesi untuk melacak dan menyimpan histori percakapan tamu."""
     
     _booking_states: dict = {}
+    _race_lock = asyncio.Lock()
     
     def __init__(self, db: AsyncSession):
         self.repo = SessionRepository(db)
@@ -27,12 +29,13 @@ class SessionManager:
     ) -> SessionData:
         """Mendapatkan sesi aktif (dan reset timer expires_at) atau men-generate sesi baru."""
         hotel_uuid = UUID(hotel_id)
-        session = await self.repo.find_active(user_identifier, hotel_uuid)
-        
-        if session:
-            session = await self.repo.touch(session.id)
-        else:
-            session = await self.repo.create(user_identifier, hotel_uuid, channel)
+        async with self._race_lock:
+            session = await self.repo.find_active(user_identifier, hotel_uuid)
+            
+            if session:
+                session = await self.repo.touch(session.id)
+            else:
+                session = await self.repo.create(user_identifier, hotel_uuid, channel)
             
         db_messages = await self.repo.get_messages(session.id, limit=MAX_HISTORY)
         history = [
